@@ -6,18 +6,44 @@ import java.util.concurrent.*;
 import java.io.*;
 import java.util.*;
 
-public class IndexServer extends UnicastRemoteObject implements Index {
-    Dictionary<String, ArrayList<String>> indexedItems = new Hashtable<String, ArrayList<String>>();
+public class Client extends UnicastRemoteObject implements IntClient {
+    private IClientGateway gateway;
+
     HashMap<String, HashSet<String>> index = new HashMap<String, HashSet<String>>();
-    Stack<String> pilha = new Stack<>();    
-    public IndexServer() throws RemoteException {
+
+    Stack<String> pilha = new Stack<>();
+
+    public Client() throws RemoteException {
         super();
+        gatewayconnect();
+
+        try {
+            
+        } catch (RemoteException e) {
+            // TODO: handle exception
+            System.out.println("Error in remote connection");
+        }
         //This structure has a number of problems. The first is that it is fixed size. Can you enumerate the others?            
     }
 
+    public void gatewayconnect() throws RemoteException {
+        try {
+            // Assuming the Gateway is registered with the name "GatewayService" in the RMI Registry
+            Registry registry = LocateRegistry.getRegistry("localhost"); // Connect to the RMI registry running on localhost
+            gateway = (IClientGateway) registry.lookup("GatewayService"); // Lookup the service
+            System.out.println("Connected to Gateway");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Unable to connect to the Gateway", e);
+        }
+    }
+    
+
+    
+
     public static void main(String args[]) {
         try {
-            IndexServer server = new IndexServer();
+            Client server = new Client();
             Registry registry = LocateRegistry.createRegistry(8183);
             registry.rebind("index", server);
             System.out.println("Server ready. Waiting for input...");
@@ -34,7 +60,7 @@ public class IndexServer extends UnicastRemoteObject implements Index {
         }
     }
 
-    private long counter = 0, timestamp = System.currentTimeMillis();;
+   
 
     public String takeNext() throws RemoteException {
         //TODO: not implemented fully. Prefer structures that return in a push/pop fashion
@@ -50,20 +76,20 @@ public class IndexServer extends UnicastRemoteObject implements Index {
     public void addToIndex(String word, String url) throws java.rmi.RemoteException {
         //TODO: not implemented
         //USAR O HASHSET !!!!!!!
-        if(indexedItems.get(word) == null){
-            indexedItems.put(word, new ArrayList<String>());
-            indexedItems.get(word).add(url);
-        }else{
-            indexedItems.get(word).add(url);
+        if (!index.containsKey(word)) {
+            index.put(word, new HashSet<String>());
         }
+        index.get(word).add(url);
     }
 
-    
     public List<String> searchWord(String word) throws java.rmi.RemoteException {
-        //TODO: not implemented
-        List<String> urls = new ArrayList<>();
-        //USAR O HASHSET !!!!!!!!
-        urls=(indexedItems.get(word));
-        return urls;
+        //USAR O HASHSET !!!!!!!
+        HashSet<String> urls = index.get(word);
+        if (urls == null) {
+            return new ArrayList<String>();
+        }
+
+        return new ArrayList<String>(urls);
     }
+
 }

@@ -2,14 +2,16 @@ package search;
 
 import java.rmi.registry.*;
 import java.util.*;
+import org.jsoup.*;
+import org.jsoup.nodes.*;
+import org.jsoup.select.*;
 
 
 
-
-public class Robot {
+public class Downloader {
     public static void main(String[] args) {
         try {
-            Index index = (Index) LocateRegistry.getRegistry(8183).lookup("index");
+            IntClient index = (IntClient) LocateRegistry.getRegistry(8183).lookup("index");
             while (true) {
                 String url = index.takeNext();
                 System.out.println(url);
