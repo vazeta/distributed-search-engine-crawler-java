@@ -11,14 +11,14 @@ import org.jsoup.select.*;
 public class Downloader {
     public static void main(String[] args) {
         try {
-            IntClient index = (IntClient) LocateRegistry.getRegistry(8183).lookup("index");
+            IntClient index = (IntClient) LocateRegistry.getRegistry(8183).lookup("index"); 
             while (true) {
                 String url = index.takeNext();
                 System.out.println(url);
-                Document doc = Jsoup.connect(url).get();
+                Document doc = Jsoup.connect(url).get(); //baixar html da pagina
                 System.out.println(doc);
-                String text = doc.text();
-                StringTokenizer token = new StringTokenizer(text, " ");
+                String text = doc.text(); //remove todas as tags html
+                StringTokenizer token = new StringTokenizer(text, " ");//separa o texto em palavras
                 while (token.hasMoreTokens()) {
                     String Token = token.nextToken();
                     index.addToIndex(Token, url);
