@@ -77,7 +77,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             Client server = new Client();
             Registry registry = LocateRegistry.createRegistry(8183);
             registry.rebind("index", server);
-            System.out.println("Server ready. Waiting for input...");
+            //System.out.println("Server ready. Waiting for input...");
             // Scanner sc = new Scanner(System.in);
             // String url_ins = sc.nextLine();
             // server.putNew(url_ins);
