@@ -4,3 +4,8 @@ Como correr
 3. correr
 4. navegar ate target
 5. java -cp ".;lib/jsoup-1.18.3.jar" search.IndexServer
+
+-> paginacao 10 a 10 -> paginar na fonte e nao no cliente
+-> barrel abaixo deve guardar estado e deve ser sincronizado ao voltar
+-> pelo menos 2 barrels
+-> os downloaders escrevem para todos os barrels tem de ter os indices atraves de multicast fiavel (caso esteja algum indisponivel, dar retry)
