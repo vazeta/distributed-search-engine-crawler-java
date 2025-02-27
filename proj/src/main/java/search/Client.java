@@ -2,14 +2,12 @@ package search;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.*;
-import java.util.concurrent.*;
-import java.io.*;
 import java.util.*;
 
 public class Client extends UnicastRemoteObject implements IntClient { 
     private IClientGateway gateway;
 
-    HashMap<String, HashSet<String>> index = new HashMap<String, HashSet<String>>(); // indice de palavras e urls associadas
+    HashMap<String, HashSet<String>> index = new HashMap<String, HashSet<String>>(); // indice de palavras e urls associadas  //meter no barrel
 
     Stack<String> pilha = new Stack<>(); //pilha para armazenar urls
 
@@ -67,6 +65,13 @@ public class Client extends UnicastRemoteObject implements IntClient {
         // Se todas as tentativas falharem, lança um erro fatal
         throw new RemoteException(" Falha: Não foi possível conectar ao Gateway após 3 tentativas.");
     }
+
+    private static void menu(){
+        System.out.println("Bem vindo ao GOOGOL!!!");
+        System.out.println("Selecione uma das seguintes opções:");
+        System.out.println("1 - Indexar um novo URL");
+        System.out.println("2 - Fazer uma pesquisa");
+    }
     
     
 
@@ -77,14 +82,25 @@ public class Client extends UnicastRemoteObject implements IntClient {
             Client server = new Client();
             Registry registry = LocateRegistry.createRegistry(8183);
             registry.rebind("index", server);
-            //System.out.println("Server ready. Waiting for input...");
-            // Scanner sc = new Scanner(System.in);
+            menu();
+            Scanner sc = new Scanner(System.in);
+            while(true){
+                int input;
+                input=sc.nextInt();
+                if(input==1){
+
+                    break;
+                }else if(input ==2){
+
+                    break;
+                }     
+            }
             // String url_ins = sc.nextLine();
             // server.putNew(url_ins);
             
             server.putNew("https://pt.wikipedia.org/wiki/Wikip%C3%A9dia:P%C3%A1gina_principal");
 
-            //sc.close();
+            sc.close();
             //server.putNew(sc.nextLine());
         } catch (RemoteException e) {
             e.printStackTrace();
