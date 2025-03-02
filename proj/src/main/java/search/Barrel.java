@@ -40,6 +40,19 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway{
     }
 
     @Override
+    public void print_index() throws RemoteException {
+        for (Map.Entry<String, HashSet<String>> entry : index.entrySet()) {
+            String palavra = entry.getKey();  
+            HashSet<String> urls = entry.getValue();  
+            System.out.println("Palavra: " + palavra);
+            System.out.println("URLs associadas:");
+            for (String url : urls) {
+                System.out.println(" - " + url);
+            }
+        }
+    }
+    
+    @Override
     public List<String> search(String word) throws RemoteException {
         HashSet<String> urls = index.getOrDefault(word, new HashSet<>());
         return new ArrayList<>(urls);

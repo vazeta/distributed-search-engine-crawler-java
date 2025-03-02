@@ -55,7 +55,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     }
     
     @Override
-    public List<String> searchWord(String word) throws RemoteException {
+    public List<String> request_index(String word) throws RemoteException {
         try {
             Registry registry = LocateRegistry.getRegistry(1100);
             IBarrelGateway barrel = (IBarrelGateway) registry.lookup("Barrel");

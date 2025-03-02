@@ -106,7 +106,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                     case 2:
                         System.out.print(" Digite a palavra a pesquisar: ");
                         String word = sc.nextLine();
-                        client.searchWord(word); //nao usar isto porque nada ta pronto ainda
+                        client.pesquisar(word); //nao usar isto porque nada ta pronto ainda
                         break;
 
                     case 3:
@@ -122,24 +122,25 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println("O programa não pôde ser iniciado pois a conexão ao Gateway falhou!");
         }
     }
+
+    public void pesquisar(String word) throws RemoteException {
+        if (gateway != null) {
+            List<String> resultados = gateway.request_index(word);  
+            System.out.println("Palavra enviada para o barrel via Gateway: " + word);
+            
+            if (resultados != null && !resultados.isEmpty()) {
+                System.out.println("URLs encontradas para '" + word + "':");
+                for (String url : resultados) {
+                    System.out.println(" - " + url);
+                }
+            } else {
+                System.out.println("Nenhuma URL encontrada para a palavra: " + word);
+            }
+        } else {
+            System.out.println("Erro: Gateway não está conectado!");
+        }
+    }
     
-    public void addToIndex(String word, String url) throws java.rmi.RemoteException {
-        //TODO: not implemented
-        //USAR O HASHSET !!!!!!!
-        if (!index.containsKey(word)) {
-            index.put(word, new HashSet<String>());
-        }
-        index.get(word).add(url);
-    }
-
-    public List<String> searchWord(String word) throws java.rmi.RemoteException {
-        //USAR O HASHSET !!!!!!!
-        HashSet<String> urls = index.get(word);
-        if (urls == null) {
-            return new ArrayList<String>();
-        }
-
-        return new ArrayList<String>(urls);
-    }
+    
 
 }

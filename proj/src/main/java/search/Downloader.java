@@ -98,7 +98,7 @@ public class Downloader {
         System.out.println(" Palavras extraídas:");
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
-            if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra)) { //de "a" a "z" mais as exceções da lingua portuguesa
+            if (palavra.matches("[a-záéíóúãõâêîôûç]+") ) { //de "a" a "z" mais as exceções da lingua portuguesa
                 System.out.println(" - " + palavra);
             }
             try {
