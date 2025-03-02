@@ -14,15 +14,22 @@ public class Downloader {
             Registry registry = LocateRegistry.getRegistry(1098);
             URLQueue queue = (URLQueue) registry.lookup("URLQueue");
 
-            // Obter uma URL da fila e imprimir no console
-            String url = queue.getNextURL();
-            if (url != null) {
-                System.out.println("🔗 URL obtida da queue: " + url);
-            } else {
-                System.out.println("⚠️ A fila de URLs está vazia!");
-            }
+            System.out.println("Donlowader iniciado.");
 
-            // ---- Comentado: Downloaders ainda não processam as páginas ----
+            while (true) {
+                String url = queue.getNextURL();
+                if (url != null) {
+                    System.out.println("URL obtida da queue: " + url);
+                } else {
+                    System.out.println("A fila de URLs está vazia! Tento de novo daqui a 3 segundos...");
+                    Thread.sleep(3000);
+                }
+                
+            }
+            // Obter uma URL da fila e imprimir no terminal
+            
+
+            //  Downloaders ainda não processam as páginas 
             /*
             // Conectar ao IndexStorageBarrel via RMI
             IBarrelGateway barrel = (IBarrelGateway) LocateRegistry.getRegistry(1100).lookup("Barrel");

@@ -3,7 +3,7 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.*;
 import java.util.*;
-import java.net.MalformedURLException;
+import java.net.MalformedURLException; //tudo o que é java .net é para a validaçao dos urls
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -12,9 +12,6 @@ public class Client extends UnicastRemoteObject implements IntClient {
     private IClientGateway gateway;
 
     HashMap<String, HashSet<String>> index = new HashMap<String, HashSet<String>>(); // indice de palavras e urls associadas  //meter no barrel
-
-    Stack<String> pilha = new Stack<>(); //pilha para armazenar urls
-
 
     public Client() throws RemoteException {
         super();
@@ -32,7 +29,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                 System.out.println("Conectado ao Gateway!");
                 return true; // Conexão bem-sucedida
 
-            } catch (NotBoundException e) {
+            } catch (NotBoundException e) { // este tipo de erro so é aplicado por causa do lookup pois nao é um problema de rede logo nao é tratado pelo outro
                 System.out.println("Erro: O serviço 'GatewayService' não está registrado no RMI Registry.");
                 e.printStackTrace();
 
@@ -42,7 +39,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             }
 
             tentativas++;
-            if (tentativas < 3) {
+            if (tentativas < 3) { // dar retrys é uma boa pratica porque java rmi é at most once
                 System.out.println("Tentando novamente em 2 segundos... (Tentativa " + (tentativas + 1) + "/3)");
                 try {
                     Thread.sleep(2000);
@@ -54,8 +51,6 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
         return false; // Se todas as tentativas falharem
     }
-
-
     public void enviarURL(String url) throws RemoteException {
         if (gateway != null) {
             gateway.addUrlToQueue(url);  
@@ -64,8 +59,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println(" Erro: Gateway não está conectado!");
         }
     }
-
-   public static boolean isValidURL(String url) {
+   public static boolean isValidURL(String url) {//funcao para validar urls usa os imports java.net
     try {
         new URI(url).toURL(); 
         return true;
@@ -73,7 +67,6 @@ public class Client extends UnicastRemoteObject implements IntClient {
         return false;
     }
 }
-
 
     private static void menu(){
         System.out.println("\n ----Bem vindo ao GOOGOL!!!-----");
@@ -84,11 +77,6 @@ public class Client extends UnicastRemoteObject implements IntClient {
         System.out.print(" Escolha: ");
 
     }
-    
-    
-
-    
-
     public static void main(String args[]) {
         try {
             Client client = new Client();  // Só prossegue se a conexão for bem-sucedida
@@ -116,9 +104,9 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         break;
 
                     case 2:
-                        System.out.print("🔎 Digite a palavra a pesquisar: ");
+                        System.out.print(" Digite a palavra a pesquisar: ");
                         String word = sc.nextLine();
-                        client.searchWord(word);
+                        client.searchWord(word); //nao usar isto porque nada ta pronto ainda
                         break;
 
                     case 3:
@@ -134,25 +122,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println("O programa não pôde ser iniciado pois a conexão ao Gateway falhou!");
         }
     }
-
-           
-
-
-   
-
-    public String takeNext() throws RemoteException {
-        if (pilha.isEmpty()) {
-            System.out.println("Aviso: Nenhuma URL disponível no momento.");
-            return null; // Retorna null em vez de lançar erro
-        }
-        return pilha.pop();
-    }
-    public void putNew(String url) throws java.rmi.RemoteException {
-        //TODO: Example code. Must be changed to use structures that have primitives such as .add(...)
-        pilha.add(url);
-
-    }
-
+    
     public void addToIndex(String word, String url) throws java.rmi.RemoteException {
         //TODO: not implemented
         //USAR O HASHSET !!!!!!!
