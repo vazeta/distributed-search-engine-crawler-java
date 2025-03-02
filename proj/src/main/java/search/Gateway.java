@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class Gateway extends UnicastRemoteObject implements IClientGateway {
     
@@ -40,6 +41,31 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         System.out.println("Cliente conectado com sucesso: " + client);
     }
 
+    @Override
+    public void addUrlToQueue(String url) throws RemoteException{
+        try{
+            Registry registry = LocateRegistry.getRegistry(1098);
+            URLQueue queue = (URLQueue) registry.lookup("URLQueue");
+            queue.addURL(url);
+            System.out.println("Gateway: URL " + url +" enviado para a fila");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+    
+    @Override
+    public List<String> searchWord(String word) throws RemoteException {
+        try {
+            Registry registry = LocateRegistry.getRegistry(1100);
+            IBarrelGateway barrel = (IBarrelGateway) registry.lookup("Barrel");
+            return barrel.search(word);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Erro ao buscar palavra.", e);
+        }
+    }
+    
     public static void main(String[] args) {
         try {
             new Gateway();

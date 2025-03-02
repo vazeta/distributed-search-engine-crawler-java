@@ -3,6 +3,10 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.*;
 import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 
 public class Client extends UnicastRemoteObject implements IntClient { 
     private IClientGateway gateway;
@@ -14,44 +18,30 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
     public Client() throws RemoteException {
         super();
-        
-        try {
-            gatewayconnect();
-            
-        } catch (RemoteException e) {
-            // TODO: handle exception
-            System.out.println("Error in remote connection");
+        if (!gatewayconnect()) {
+            throw new RemoteException("Falha: Não foi possível conectar ao Gateway.");
         }
-
-        
-        //This structure has a number of problems. The first is that it is fixed size. Can you enumerate the others?            
     }
 
-    public void gatewayconnect() throws RemoteException {
+    public boolean gatewayconnect() {
         int tentativas = 0;
         while (tentativas < 3) {
             try {
-                // Conectar ao RMI Registry rodando no localhost
                 Registry registry = LocateRegistry.getRegistry("localhost");
-                gateway = (IClientGateway) registry.lookup("GatewayService"); // Procurar pelo serviço
-                
-                System.out.println("Connected to Gateway");
-                return; // Conectado com sucesso, sai do método
-    
+                gateway = (IClientGateway) registry.lookup("GatewayService");
+                System.out.println("Conectado ao Gateway!");
+                return true; // Conexão bem-sucedida
+
             } catch (NotBoundException e) {
                 System.out.println("Erro: O serviço 'GatewayService' não está registrado no RMI Registry.");
                 e.printStackTrace();
-    
-                tentativas++; // Incrementa tentativas
-    
+
             } catch (RemoteException e) {
                 System.out.println("Erro: Problema na comunicação remota com o RMI Registry.");
                 e.printStackTrace();
-    
-                tentativas++; // Incrementa tentativas
             }
-    
-            // Espera antes de tentar novamente
+
+            tentativas++;
             if (tentativas < 3) {
                 System.out.println("Tentando novamente em 2 segundos... (Tentativa " + (tentativas + 1) + "/3)");
                 try {
@@ -61,16 +51,38 @@ public class Client extends UnicastRemoteObject implements IntClient {
                 }
             }
         }
-        
-        // Se todas as tentativas falharem, lança um erro fatal
-        throw new RemoteException(" Falha: Não foi possível conectar ao Gateway após 3 tentativas.");
+
+        return false; // Se todas as tentativas falharem
     }
 
+
+    public void enviarURL(String url) throws RemoteException {
+        if (gateway != null) {
+            gateway.addUrlToQueue(url);  
+            System.out.println(" URL enviada para a queue via Gateway: " + url);
+        } else {
+            System.out.println(" Erro: Gateway não está conectado!");
+        }
+    }
+
+   public static boolean isValidURL(String url) {
+    try {
+        new URI(url).toURL(); 
+        return true;
+    } catch (URISyntaxException | MalformedURLException e) {
+        return false;
+    }
+}
+
+
     private static void menu(){
-        System.out.println("Bem vindo ao GOOGOL!!!");
+        System.out.println("\n ----Bem vindo ao GOOGOL!!!-----");
         System.out.println("Selecione uma das seguintes opções:");
         System.out.println("1 - Indexar um novo URL");
         System.out.println("2 - Fazer uma pesquisa");
+        System.out.println("3 -  Sair");
+        System.out.print(" Escolha: ");
+
     }
     
     
@@ -79,33 +91,52 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
     public static void main(String args[]) {
         try {
-            Client server = new Client();
-            Registry registry = LocateRegistry.createRegistry(8183);
-            registry.rebind("index", server);
-            menu();
+            Client client = new Client();  // Só prossegue se a conexão for bem-sucedida
             Scanner sc = new Scanner(System.in);
-            while(true){
+
+            while (true) {
+                menu();
                 int input;
-                input=sc.nextInt();
-                if(input==1){
+                try {
+                    input = Integer.parseInt(sc.nextLine());
+                } catch (NumberFormatException e) {
+                    System.out.println("Entrada inválida! Digite um número.");
+                    continue;
+                }
 
-                    break;
-                }else if(input ==2){
+                switch (input) {
+                    case 1:
+                        System.out.print(" Digite a URL para indexação: ");
+                        String url = sc.nextLine();
+                        if (isValidURL(url)) {
+                            client.enviarURL(url);  
+                        } else {
+                            System.out.println("Erro: O que inseriste não é um URL válido!");
+                        }
+                        break;
 
-                    break;
-                }     
+                    case 2:
+                        System.out.print("🔎 Digite a palavra a pesquisar: ");
+                        String word = sc.nextLine();
+                        client.searchWord(word);
+                        break;
+
+                    case 3:
+                        System.out.println("A sair do Googol...");
+                        sc.close();
+                        return;
+
+                    default:
+                        System.out.println("Opção inválida! Tente novamente.");
+                }
             }
-            // String url_ins = sc.nextLine();
-            // server.putNew(url_ins);
-            
-            server.putNew("https://pt.wikipedia.org/wiki/Wikip%C3%A9dia:P%C3%A1gina_principal");
-
-            sc.close();
-            //server.putNew(sc.nextLine());
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.out.println("O programa não pôde ser iniciado pois a conexão ao Gateway falhou!");
         }
     }
+
+           
+
 
    
 
