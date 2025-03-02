@@ -1,15 +1,9 @@
 package search;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.List;
 
-import java.rmi.*;
-
-public class IBarrelGateway extends Remote {
-    public static void main(String[] args) {
-        try {
-            System.out.println("opaddj");
-        } catch (RemoteException e) {
-            // TODO: handle exception
-            System.out.println("opaddj");
-        }
-    }
-
+public interface IBarrelGateway  extends Remote{
+    void storeData(String palavra, String url) throws RemoteException;
+    List<String> search(String word) throws RemoteException;
 }
