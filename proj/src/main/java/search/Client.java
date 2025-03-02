@@ -74,7 +74,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
         System.out.println("1 - Indexar um novo URL");
         System.out.println("2 - Fazer uma pesquisa");
         System.out.println("3 -  Sair");
-        System.out.print(" Escolha: ");
+        System.out.print("Escolha: ");
 
     }
     public static void main(String args[]) {
