@@ -3,7 +3,7 @@ Como correr
 2. compilar com javac -d ..\..\..\target\ -cp ..\..\..\target\lib\jsoup-1.18.3.jar search\*.java
 3. correr
 4. navegar ate target
-5. java -cp ".;lib/jsoup-1.18.3.jar" search.IndexServer
+5. java -cp ".;lib/jsoup-1.18.3.jar" search.Client
 
 -> paginacao 10 a 10 -> paginar na fonte e nao no cliente
 -> barrel abaixo deve guardar estado e deve ser sincronizado ao voltar
