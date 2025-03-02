@@ -29,9 +29,14 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway{
 
     }
     @Override
-    public void storeData(String palavra, String url) throws RemoteException{
-        index.computeIfAbsent(palavra, k -> new HashSet<>()).add(url);
-        System.out.println("Indexado: [" + palavra + "] -> " + url);
+    public void storeData(String palavra, String url) throws RemoteException {
+        if (index.containsKey(palavra)) {
+            index.get(palavra).add(url);
+        } else {
+            HashSet<String> urls = new HashSet<>();
+            urls.add(url);
+            index.put(palavra, urls);
+        }
     }
 
     @Override

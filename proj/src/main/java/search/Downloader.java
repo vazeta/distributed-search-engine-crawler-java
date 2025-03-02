@@ -3,9 +3,9 @@ package search;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+import javax.print.DocFlavor.STRING;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -16,14 +16,18 @@ import java.rmi.RemoteException;
 
 public class Downloader {
     private static String[] stop_words;
+    private static IBarrelGateway barrel;
     public static void main(String[] args) throws IOException{
 
         carregarStopWords("lib/stopwords.txt");
         try {
 
+            Registry registry = LocateRegistry.getRegistry(1100);
+            barrel = (IBarrelGateway) registry.lookup("Barrel");
+
             // Conectar ao RMI Registry na porta 1098 para acessar a URL Queue
-            Registry registry = LocateRegistry.getRegistry(1098);
-            URLQueue queue = (URLQueue) registry.lookup("URLQueue");
+            Registry urlregistry = LocateRegistry.getRegistry(1098);
+            URLQueue queue = (URLQueue) urlregistry.lookup("URLQueue");
 
             System.out.println("Donlowader iniciado.");
 
@@ -72,7 +76,7 @@ public class Downloader {
             String texto = doc.text(); // Extrai apenas o texto puro
 
             System.out.println(" Texto extraído da página:");
-            imprimirPalavras(texto);
+            imprimirPalavras(texto, url);
 
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
@@ -80,13 +84,30 @@ public class Downloader {
         }
     }
 
-    private static void imprimirPalavras(String texto) {
-        StringTokenizer tokenizer = new StringTokenizer(texto, " \t\n\r\f.,;:!?()[]\"'"); // Divide o texto em palavras
+    private static boolean isStopWord(String palavra) {
+        for (String stopWord : stop_words) {
+            if (stopWord.equals(palavra)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    private static void imprimirPalavras(String texto, String url) {
+        StringTokenizer tokenizer = new StringTokenizer(texto, " \t\n\r\f.,;:!?()[]\"'"); // Divide o texto em palavras em espaços em quebras e tambem nas pontuações
         System.out.println(" Palavras extraídas:");
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
-            System.out.println(" - " + palavra);
+            if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra)) { //de "a" a "z" mais as exceções da lingua portuguesa
+                System.out.println(" - " + palavra);
+            }
+            try {
+                barrel.storeData(palavra, url);
+            } catch (RemoteException e ) {
+                // TODO: handle exception
+                System.out.println("Erro a envia a palavra aos barrels");
+                e.printStackTrace();
+            }
         }
         System.out.println(" Fim da extração de palavras.");
     }
