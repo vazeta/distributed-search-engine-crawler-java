@@ -14,16 +14,24 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
 public class Downloader {
-    private static String[] stop_words;
-    private static IBarrelGateway barrel;
-    private static URLQueue queue;
-    private static ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
+    private Set<String> stop_words;
+    private IBarrelGateway barrel;
+    private URLQueue queue;
+    private ArrayList<String> palavras;
+    //private ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
+    private String titulo;
+    private String citacao;
+    private static final String MULTICAST_GROUP = "230.0.0.1";
+    private static final int MULTICAST_PORT = 4446;
 
-    public static void main(String[] args) throws IOException {
+    public void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
 
         try {
@@ -45,7 +53,7 @@ public class Downloader {
         }
     }
 
-    private static class DownloaderTask implements Runnable {
+    private class DownloaderTask implements Runnable {
         private URLQueue queue;
         private IBarrelGateway barrel;
 
@@ -62,6 +70,12 @@ public class Downloader {
                     if (url != null) {  
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
                         processarPagina(url, queue, barrel);
+                        try {
+                            String mensagem = "URL: " + url + "\nTitle: " + titulo + "\nCitation: " + citacao + "\n.";
+                            enviarReliableMulticast(mensagem);
+                        } catch (Exception e) {
+                            // TODO: handle exception
+                        }
                     } else {
                         System.out.println(Thread.currentThread().getName() + " - Fila vazia, tentando novamente em 3s...");
                         Thread.sleep(3000);
@@ -73,14 +87,32 @@ public class Downloader {
         }
     }
 
-    private static void processarPagina(String url, URLQueue queue, IBarrelGateway barrel) {
+    private void enviarReliableMulticast(String mensagem) {
+        try {
+            InetAddress group = InetAddress.getByName(MULTICAST_GROUP);
+            DatagramSocket socket = new DatagramSocket();
+            byte[] buffer = mensagem.getBytes();
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, MULTICAST_PORT);
+            socket.send(packet);
+            socket.close();
+            System.out.println("Mensagem multicast enviada: " + mensagem);
+        } catch (Exception e) {
+            System.out.println("Erro ao enviar mensagem multicast");
+            e.printStackTrace();
+        }
+    }
+   
+
+
+    private void processarPagina(String url, URLQueue queue, IBarrelGateway barrel) {
         try {
             System.out.println(Thread.currentThread().getName() + " baixando: " + url);
             Document doc = Jsoup.connect(url).get();
             String texto = doc.text();
-            Elements links = doc.select("a[href]");
-            HashSet<String> uniqueUrls = new HashSet<>();
-
+            titulo = doc.title();
+            citacao = doc.select("meta[name=description]").attr("content");
+            //Elements links = doc.select("a[href]");
+            //HashSet<String> uniqueUrls = new HashSet<>();
             // for (Element link : links) {
             //     String linkAbsoluto = link.absUrl("href");
             //     if (isValidURL(linkAbsoluto) && processedUrls.putIfAbsent(linkAbsoluto, true) == null) {
@@ -88,42 +120,43 @@ public class Downloader {
             //         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
             //     }
             // }
-
-            imprimirPalavras(texto, url, barrel);
+            processarPalavras(texto, url);
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
             e.printStackTrace();
         }
     }
 
-    private static void imprimirPalavras(String texto, String url, IBarrelGateway barrel) {
+    private void processarPalavras(String texto, String url) {
         StringTokenizer tokenizer = new StringTokenizer(texto, " \t\n\r\f.,;:!?()[]\"'");
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
-            if (palavra.matches("[a-záéíóúãõâêîôûç]+")) {
-                try {
-                    barrel.storeData(palavra, url);
-                } catch (RemoteException e) {
-                    System.out.println("Erro ao enviar palavra aos barrels.");
-                    e.printStackTrace();
-                }
+            if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra) ) {
+                palavras.add(palavra);
             }
         }
     }
 
-    private static void carregarStopWords(String caminhoFile) throws IOException {
-        List<String> lines = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new FileReader(caminhoFile));
+    private boolean isStopWord(String word) {
+        return stop_words.contains(word);
+      }
+
+    private void carregarStopWords(String filename) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
         String line;
         while ((line = reader.readLine()) != null) {
-            lines.add(line.strip());
+        String word = line.trim().toLowerCase();
+        if (!word.isEmpty()) {
+            stop_words.add((word));
         }
-        reader.close();
-        stop_words = lines.toArray(new String[0]);
-        System.out.println("Total de palavras carregadas: " + stop_words.length);
+        }
+    } catch (IOException e) {
+        System.err.println("Erro a carregar stop words.");
+        System.exit(1);
+    }
     }
 
-    public static boolean isValidURL(String url) {
+    public boolean isValidURL(String url) {
         try {
             URI uri = new URI(url);
             String scheme = uri.getScheme();
