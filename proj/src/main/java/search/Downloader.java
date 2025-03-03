@@ -6,13 +6,20 @@ import java.util.*;
 import javax.print.DocFlavor.STRING;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
+
 
 public class Downloader {
     private static String[] stop_words;
@@ -35,7 +42,7 @@ public class Downloader {
                 String url = queue.getNextURL();
                 if (url != null) {
                     System.out.println("URL obtida da queue: " + url);
-                    processarPagina(url);
+                    processarPagina(url, queue);
                 } else {
                     System.out.println("A fila de URLs está vazia! Tento de novo daqui a 3 segundos...");
                     Thread.sleep(3000);
@@ -69,11 +76,28 @@ public class Downloader {
             e.printStackTrace();
         }
     }
-    private static void processarPagina(String url) {
+    private static void processarPagina(String url, URLQueue queue) {
         try {
             System.out.println(" A baixar a página: " + url);
             Document doc = Jsoup.connect(url).get(); // Baixa a página HTML
             String texto = doc.text(); // Extrai apenas o texto puro
+            Elements links = doc.select("a[href]");
+            HashSet<String> uniqueUrls = new HashSet<>();
+
+            for(Element link : links){
+                String linkAbsoluto = link.absUrl("href");
+                if (isValidURL(linkAbsoluto) && !uniqueUrls.contains(linkAbsoluto)) {
+                    uniqueUrls.add(linkAbsoluto);
+                    //System.out.println("Nova url enontrada e enviada para a queue: " + linkAbsoluto);  
+                }
+            }
+            for(String urlNovo : uniqueUrls){
+                queue.addURL(urlNovo);
+                 System.out.println("Nova url enontrada e enviada para a queue: " + urlNovo);  
+
+            }
+
+
 
             System.out.println(" Texto extraído da página:");
             imprimirPalavras(texto, url);
@@ -92,7 +116,8 @@ public class Downloader {
         }
         return false;
     }
-
+    
+     
     private static void imprimirPalavras(String texto, String url) {
         StringTokenizer tokenizer = new StringTokenizer(texto, " \t\n\r\f.,;:!?()[]\"'"); // Divide o texto em palavras em espaços em quebras e tambem nas pontuações
         System.out.println(" Palavras extraídas:");
@@ -126,6 +151,22 @@ public class Downloader {
         stop_words = lines.toArray(new String[0]);
 
         System.out.println("Total de palavras carregadas: " + stop_words.length);
+    }
+
+    public static boolean isValidURL(String url) {
+        try {
+            URI uri = new URI(url);
+            String scheme = uri.getScheme();
+    
+            if (scheme == null || !(scheme.equals("http") || scheme.equals("https"))) {
+                return false;
+            }
+    
+            uri.toURL(); // Converte para URL sem usar o construtor obsoleto
+            return true;
+        } catch (URISyntaxException | MalformedURLException e) {
+            return false;
+        }
     }
 
 }
