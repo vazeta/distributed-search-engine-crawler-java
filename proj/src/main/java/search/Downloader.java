@@ -21,23 +21,19 @@ import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 
 public class Downloader {
-    private Set<String> stop_words;
+    private static Set<String> stop_words = new HashSet<>();
     private IBarrelGateway barrel;
-    private URLQueue queue;
-    private ArrayList<String> palavras;
+    private static URLQueue queue;
+    private static ArrayList<String> palavras = new ArrayList<>();
     //private ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
-    private String titulo;
-    private String citacao;
+    private static String titulo;
+    private static String citacao;
     private static final String MULTICAST_GROUP = "230.0.0.1";
     private static final int MULTICAST_PORT = 4446;
 
-    public void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
-
         try {
-            Registry registry = LocateRegistry.getRegistry(1100);
-            barrel = (IBarrelGateway) registry.lookup("Barrel");
-
             Registry urlregistry = LocateRegistry.getRegistry(1098);
             queue = (URLQueue) urlregistry.lookup("URLQueue");
 
@@ -45,7 +41,7 @@ public class Downloader {
 
             int numDownloaders = 3;
             for (int i = 0; i < numDownloaders; i++) {
-                new Thread(new DownloaderTask(queue, barrel)).start();
+                new Thread(new DownloaderTask(queue)).start();
             }
 
         } catch (Exception e) {
@@ -53,13 +49,11 @@ public class Downloader {
         }
     }
 
-    private class DownloaderTask implements Runnable {
-        private URLQueue queue;
-        private IBarrelGateway barrel;
+    private static class DownloaderTask implements Runnable {
+        private static URLQueue queue;
 
-        public DownloaderTask(URLQueue queue, IBarrelGateway barrel) {
+        public DownloaderTask(URLQueue queue) {
             this.queue = queue;
-            this.barrel = barrel;
         }
 
         @Override
@@ -69,7 +63,7 @@ public class Downloader {
                     String url = queue.getNextURL();
                     if (url != null) {  
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
-                        processarPagina(url, queue, barrel);
+                        processarPagina(url, queue);
                         try {
                             String mensagem = "URL: " + url + "\nTitle: " + titulo + "\nCitation: " + citacao + "\n.";
                             enviarReliableMulticast(mensagem);
@@ -87,7 +81,7 @@ public class Downloader {
         }
     }
 
-    private void enviarReliableMulticast(String mensagem) {
+    private static void enviarReliableMulticast(String mensagem) {
         try {
             InetAddress group = InetAddress.getByName(MULTICAST_GROUP);
             DatagramSocket socket = new DatagramSocket();
@@ -104,7 +98,7 @@ public class Downloader {
    
 
 
-    private void processarPagina(String url, URLQueue queue, IBarrelGateway barrel) {
+    private static void processarPagina(String url, URLQueue queue) {
         try {
             System.out.println(Thread.currentThread().getName() + " baixando: " + url);
             Document doc = Jsoup.connect(url).get();
@@ -127,7 +121,7 @@ public class Downloader {
         }
     }
 
-    private void processarPalavras(String texto, String url) {
+    private static void processarPalavras(String texto, String url) {
         StringTokenizer tokenizer = new StringTokenizer(texto, " \t\n\r\f.,;:!?()[]\"'");
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
@@ -137,11 +131,11 @@ public class Downloader {
         }
     }
 
-    private boolean isStopWord(String word) {
+    private static boolean isStopWord(String word) {
         return stop_words.contains(word);
       }
 
-    private void carregarStopWords(String filename) {
+    private static void carregarStopWords(String filename) {
     try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
         String line;
         while ((line = reader.readLine()) != null) {
