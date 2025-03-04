@@ -64,8 +64,7 @@ public class Downloader {
                     if (url != null) {  
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
                         processarPagina(url, queue);
-                        String mensagem = "URL: " + url + "\nTitle: " + titulo + "\nCitation: " + citacao + "\n.";
-                        enviarReliableMulticast(mensagem);
+                        
                     } 
                  
                 }catch (Exception e) {
@@ -120,7 +119,8 @@ public class Downloader {
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
             if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra) ) {
-                palavras.add(palavra);
+                String mensagem = palavra + " " + url + " " + titulo + " " + citacao;
+                enviarReliableMulticast(mensagem);
             }
         }
     }

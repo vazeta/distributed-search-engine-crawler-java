@@ -4,29 +4,30 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Gateway extends UnicastRemoteObject implements IClientGateway {
     
     public Gateway() throws RemoteException {
         super();
-        gatewayReg(); // Chama o método que regista o serviço RMI
+        gatewayReg(); // Registra o serviço RMI
     }
 
     private void gatewayReg() {
         try {
             Registry registry;
             try {
-                // Primeiro, tenta criar um novo RMI Registry
+                // Criar um novo RMI Registry na porta 1099
                 registry = LocateRegistry.createRegistry(1099);
                 System.out.println("Novo RMI Registry criado na porta 1099.");
             } catch (RemoteException e) {
-                // Se já existir, apenas conecta-se a ele
+                // Se já existir, conecta-se a ele
                 System.out.println("RMI Registry já existente. Conectando...");
                 registry = LocateRegistry.getRegistry(1099);
             }
 
-            // Regista o `Gateway` no RMI
+            // Registra o `Gateway` no RMI
             registry.rebind("GatewayService", this);
             System.out.println("Gateway RMI registrado com sucesso.");
             
@@ -42,30 +43,50 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     }
 
     @Override
-    public void addUrlToQueue(String url) throws RemoteException{
-        try{
+    public void addUrlToQueue(String url) throws RemoteException {
+        try {
             Registry registry = LocateRegistry.getRegistry(1098);
             URLQueue queue = (URLQueue) registry.lookup("URLQueue");
             queue.addURL(url);
-            System.out.println("Gateway: URL " + url +" enviado para a fila");
-        }catch(Exception e){
+            System.out.println("Gateway: URL " + url + " enviada para a fila");
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-    
+
     @Override
     public List<String> request_index(String word) throws RemoteException {
+        List<String> resultados = new ArrayList<>();
         try {
             Registry registry = LocateRegistry.getRegistry(1100);
-            IBarrelGateway barrel = (IBarrelGateway) registry.lookup("Barrel");
-            return barrel.search(word);
+            String[] barrels = registry.list();  // Obtém todos os serviços registrados na porta 1100
+
+            System.out.println("🔍 Gateway encontrou os seguintes Barrels: ");
+            for (String barrelName : barrels) {
+                System.out.println(" - " + barrelName);
+
+                try {
+                    // Busca cada Barrel registrado no RMI
+                    IBarrelGateway barrel = (IBarrelGateway) registry.lookup(barrelName);
+                    List<String> resultadosParciais = barrel.search(word);
+                    
+                    if (resultadosParciais != null) {
+                        resultados.addAll(resultadosParciais);
+                    }
+                } catch (Exception e) {
+                    System.out.println("❌ Erro ao conectar ao " + barrelName);
+                    e.printStackTrace();
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new RemoteException("Erro ao buscar palavra.", e);
         }
+
+        return resultados;
     }
-    
+
     public static void main(String[] args) {
         try {
             new Gateway();

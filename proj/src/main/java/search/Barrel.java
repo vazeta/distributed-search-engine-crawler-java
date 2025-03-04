@@ -114,7 +114,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
                 String message = new String(packet.getData(), 0, packet.getLength());
                 System.out.println("🔹 " + barrelName + " recebeu multicast: " + message);
 
-                //processReceivedData(message);
+                processReceivedData(message);
             }
         } catch (Exception e) {
             e.printStackTrace();
