@@ -41,7 +41,7 @@ public class Downloader {
 
             int numDownloaders = 3;
             for (int i = 0; i < numDownloaders; i++) {
-                new Thread(new DownloaderTask(queue)).start();
+                new Thread(new DownloaderTask(queue), "Downloader-" + (i+1)).start();
             }
 
         } catch (Exception e) {
@@ -64,17 +64,11 @@ public class Downloader {
                     if (url != null) {  
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
                         processarPagina(url, queue);
-                        try {
-                            String mensagem = "URL: " + url + "\nTitle: " + titulo + "\nCitation: " + citacao + "\n.";
-                            enviarReliableMulticast(mensagem);
-                        } catch (Exception e) {
-                            // TODO: handle exception
-                        }
-                    } else {
-                        System.out.println(Thread.currentThread().getName() + " - Fila vazia, tentando novamente em 3s...");
-                        Thread.sleep(3000);
-                    }
-                } catch (Exception e) {
+                        String mensagem = "URL: " + url + "\nTitle: " + titulo + "\nCitation: " + citacao + "\n.";
+                        enviarReliableMulticast(mensagem);
+                    } 
+                 
+                }catch (Exception e) {
                     e.printStackTrace();
                 }
             }

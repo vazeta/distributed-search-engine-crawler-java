@@ -20,11 +20,23 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
     public synchronized void addURL(String url) throws RemoteException {
         urlQueue.add(url);
         System.out.println("URL adicionada à fila: " + url);
+        notifyAll();
     }
 
     @Override
     public synchronized String getNextURL() throws RemoteException {
-        return urlQueue.poll();
+        while (urlQueue.isEmpty()) {
+            try{
+                System.out.println("Downloader a espera de URLS...");
+                wait();
+            }catch(InterruptedException e){
+                Thread.currentThread().interrupt();
+            }
+            
+        }
+        String url = urlQueue.poll();
+        System.out.println("A enviar URL para downloader: "+ url);
+        return url;
     }
 
     public static void main(String[] args) {
