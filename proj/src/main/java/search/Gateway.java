@@ -5,6 +5,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Gateway extends UnicastRemoteObject implements IClientGateway {
@@ -56,35 +57,44 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     @Override
     public List<String> request_index(String word) throws RemoteException {
-        List<String> resultados = new ArrayList<>();
+        Registry registry;
+        String[] barrels;
+
         try {
-            Registry registry = LocateRegistry.getRegistry(1100);
-            String[] barrels = registry.list();  // Obtém todos os serviços registrados na porta 1100
-
-            System.out.println("🔍 Gateway encontrou os seguintes Barrels: ");
-            for (String barrelName : barrels) {
-                System.out.println(" - " + barrelName);
-
-                try {
-                    // Busca cada Barrel registrado no RMI
-                    IBarrelGateway barrel = (IBarrelGateway) registry.lookup(barrelName);
-                    List<String> resultadosParciais = barrel.search(word);
-                    
-                    if (resultadosParciais != null) {
-                        resultados.addAll(resultadosParciais);
-                    }
-                } catch (Exception e) {
-                    System.out.println("❌ Erro ao conectar ao " + barrelName);
-                    e.printStackTrace();
-                }
-            }
-
+            registry = LocateRegistry.getRegistry(1100);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RemoteException("Erro ao buscar palavra.", e);
+            throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
         }
 
-        return resultados;
+        while (true) { 
+            try {
+                barrels = registry.list(); 
+
+                if (barrels.length == 0) {
+                    System.out.println("Nenhum Barrel disponível. Tentando novamente em 2 segundos...");
+                    Thread.sleep(2000);
+                }
+
+                List<String> listaBarrels = new ArrayList<>(Arrays.asList(barrels));
+
+                for (String selectedBarrel : listaBarrels) {
+                    try {
+                        System.out.println("🔍 Tentando conectar ao Barrel: " + selectedBarrel);
+                        IBarrelGateway barrel = (IBarrelGateway) registry.lookup(selectedBarrel);
+                        return barrel.search(word);
+                    } catch (Exception e) {
+                        System.out.println("Erro ao conectar ao Barrel " + selectedBarrel + ". Tentando outro...");
+                    }
+                }
+
+                System.out.println("Todos os Barrels falharam. Tentando novamente em 2 segundos...");
+                Thread.sleep(2000);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RemoteException("Erro ao buscar palavra.", e);
+            }
+        }
     }
 
     public static void main(String[] args) {

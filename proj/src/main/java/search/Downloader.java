@@ -22,14 +22,13 @@ import java.rmi.RemoteException;
 
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
-    private IBarrelGateway barrel;
     private static URLQueue queue;
-    private static ArrayList<String> palavras = new ArrayList<>();
-    //private ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
+    private static ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
     private static String titulo;
     private static String citacao;
     private static final String MULTICAST_GROUP = "230.0.0.1";
     private static final int MULTICAST_PORT = 4447;
+    private static final String LISTA_URLS_FILE = "ListaUrls.obj";
 
     public static void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
@@ -82,7 +81,7 @@ public class Downloader {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, MULTICAST_PORT);
             socket.send(packet);
             socket.close();
-            System.out.println("Mensagem multicast enviada: " + mensagem);
+            //System.out.println("Mensagem multicast enviada: " + mensagem);
         } catch (Exception e) {
             System.out.println("Erro ao enviar mensagem multicast");
             e.printStackTrace();
@@ -93,21 +92,28 @@ public class Downloader {
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
-            System.out.println(Thread.currentThread().getName() + " baixando: " + url);
-            Document doc = Jsoup.connect(url).get();
-            String texto = doc.text();
-            titulo = doc.title();
-            citacao = doc.select("meta[name=description]").attr("content");
-            //Elements links = doc.select("a[href]");
-            //HashSet<String> uniqueUrls = new HashSet<>();
-            // for (Element link : links) {
-            //     String linkAbsoluto = link.absUrl("href");
-            //     if (isValidURL(linkAbsoluto) && processedUrls.putIfAbsent(linkAbsoluto, true) == null) {
-            //         queue.addURL(linkAbsoluto);
-            //         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
-            //     }
-            // }
-            processarPalavras(texto, url);
+            HashSet<String> urlList = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
+            if(!processedUrls.containsKey(url) && !urlList.contains(url)){
+                processedUrls.put(url, true);
+                System.out.println(Thread.currentThread().getName() + " baixando: " + url);
+                Document doc = Jsoup.connect(url).get();
+                String texto = doc.text();
+                titulo = doc.title();
+                citacao = doc.select("meta[name=description]").attr("content");
+                //Elements links = doc.select("a[href]");
+                //HashSet<String> uniqueUrls = new HashSet<>();
+                // for (Element link : links) {
+                //     String linkAbsoluto = link.absUrl("href");
+                //     if (isValidURL(linkAbsoluto) && processedUrls.putIfAbsent(linkAbsoluto, true) == null) {
+                //         queue.addURL(linkAbsoluto);
+                //         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                //     }
+                // }
+                salvarURL(url);
+                processarPalavras(texto, url);
+            }else{
+                System.out.println("URL:" + url + " ja foi processado.");
+            }
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
             e.printStackTrace();
@@ -151,6 +157,15 @@ public class Downloader {
             return scheme != null && (scheme.equals("http") || scheme.equals("https"));
         } catch (URISyntaxException e) {
             return false;
+        }
+    }
+
+    private static void salvarURL(String url) {
+        HashSet<String> urlList = StorageUtil.loadData(LISTA_URLS_FILE, new HashSet<>());
+    
+        if (urlList.add(url)) {  // Adiciona apenas se não existir
+            StorageUtil.saveData(urlList, LISTA_URLS_FILE);
+            System.out.println(" URL salva: " + url);
         }
     }
 }
