@@ -20,29 +20,62 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     private InetAddress group;
     private NetworkInterface networkInterface;
     private MulticastSocket socket;
+    private String barrelName;  // 📌 Adicionando um nome único para cada Barrel
 
-    public Barrel() throws RemoteException {
+    public Barrel(String name) throws RemoteException {
         super();
+        this.barrelName = name;  // 📌 Inicializa o nome do Barrel
         index = new HashMap<>();
+
         try {
+            // Obtém o grupo multicast
             group = InetAddress.getByName(MULTICAST_GROUP);
+
+            // Cria o socket multicast
             socket = new MulticastSocket(MULTICAST_RECEIVE_PORT);
+            socket.setReuseAddress(true); // Permite reuso da porta
+
+            // Obtém a interface de rede
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            if (networkInterface == null) {
+                System.out.println("Erro: Nenhuma interface de rede encontrada.");
+                return;
+            }
+
+            // Junta-se ao grupo multicast (versão atualizada)
             SocketAddress groupAddress = new InetSocketAddress(group, MULTICAST_RECEIVE_PORT);
             socket.joinGroup(groupAddress, networkInterface);
-            new Thread(this::listenForMulticast).start();
+            System.out.println("✅ " + barrelName + " conectado ao grupo multicast " + MULTICAST_GROUP);
+
+            // Inicia a Thread para escutar Multicast
+            new Thread(() -> {
+                System.out.println("🔄 " + barrelName + " escutando mensagens multicast...");
+                listenForMulticast();
+            }).start();
+
+            System.out.println("🎯 " + barrelName + " criado com sucesso");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void RegisterBarrel(String barrelName) {
+    private void RegisterBarrel() {
         try {
-            Registry registry = LocateRegistry.getRegistry(1100); // Usa o registry já existente
-            registry.rebind(barrelName, this);  // Registra o objeto Barrel com nome único
-            System.out.println(barrelName + " registrado com sucesso");
+            Registry registry;
+
+            try {
+                registry = LocateRegistry.createRegistry(1100); // Usa o registry já existente
+                System.out.println("Novo RMI Registry criado na porta 1100.");
+            } catch (RemoteException e) {
+                System.out.println("RMI Registry já existente. Conectando...");
+                registry = LocateRegistry.getRegistry("127.0.0.1", 1100);
+            }
+
+            registry.rebind(barrelName, this);
+            System.out.println( barrelName + " registrado no RMI.");
         } catch (RemoteException e) {
-            System.out.println("Erro ao registrar " + barrelName + " no rmi");
+            System.out.println("Erro ao registrar " + barrelName + " no RMI.");
             e.printStackTrace();
         }
     }
@@ -55,29 +88,33 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             infoSet.add(infoAssociada);
             index.put(palavra, infoSet);
         }
+        System.out.println("📌 [" + barrelName + "] Armazenou: " + palavra + " -> " + infoAssociada);
     }
 
     @Override
     public void print_index() throws RemoteException {
+        System.out.println("📋 [" + barrelName + "] Índice Atual:");
         for (Map.Entry<String, HashSet<String>> entry : index.entrySet()) {
-            String palavra = entry.getKey();
-            HashSet<String> urls = entry.getValue();
-            System.out.println("Palavra: " + palavra);
-            System.out.println("URLs associadas:");
-            for (String url : urls) {
-                System.out.println(" - " + url);
+            System.out.println("🔹 Palavra: " + entry.getKey());
+            for (String url : entry.getValue()) {
+                System.out.println("   - " + url);
             }
         }
     }
 
     private void listenForMulticast() {
         try {
-            byte[] buffer = new byte[256];
+            byte[] buffer = new byte[2048];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+
             while (true) {
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                System.out.println("🕐 " + barrelName + " aguardando mensagens multicast...");
                 socket.receive(packet);
+
                 String message = new String(packet.getData(), 0, packet.getLength());
-                processReceivedData(message);
+                System.out.println("🔹 " + barrelName + " recebeu multicast: " + message);
+
+                //processReceivedData(message);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,7 +131,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             String infoAssociada = url + " | Título: " + titulo + " | Citação: " + citacao;
             storeDataInIndex(palavra, infoAssociada);
         } else {
-            System.out.println("Mensagem recebida não está no formato esperado");
+            System.out.println("❌ [" + barrelName + "] Mensagem recebida não está no formato esperado.");
         }
     }
 
@@ -106,13 +143,12 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
 
     public static void main(String[] args) {
         try {
-            Barrel barrel1 = new Barrel();
-            barrel1.RegisterBarrel("Barrel1");  // Registra com nome "Barrel1"
-            
-            Barrel barrel2 = new Barrel();
-            barrel2.RegisterBarrel("Barrel2");  // Registra com nome "Barrel2"
-            
-            System.out.println("Dois Barrels criados!");
+            Barrel barrel1 = new Barrel("Barrel1");
+            barrel1.RegisterBarrel();
+
+            Barrel barrel2 = new Barrel("Barrel2");
+            barrel2.RegisterBarrel();
+
         } catch (RemoteException e) {
             e.printStackTrace();
         }

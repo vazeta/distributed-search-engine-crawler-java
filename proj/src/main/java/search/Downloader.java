@@ -29,7 +29,7 @@ public class Downloader {
     private static String titulo;
     private static String citacao;
     private static final String MULTICAST_GROUP = "230.0.0.1";
-    private static final int MULTICAST_PORT = 4446;
+    private static final int MULTICAST_PORT = 4447;
 
     public static void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
