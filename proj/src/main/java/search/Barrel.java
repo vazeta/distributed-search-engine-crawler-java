@@ -20,11 +20,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     private InetAddress group;
     private NetworkInterface networkInterface;
     private MulticastSocket socket;
-    private String barrelName;  // 📌 Adicionando um nome único para cada Barrel
+    private String barrelName;
 
     public Barrel(String name) throws RemoteException {
         super();
-        this.barrelName = name;  // 📌 Inicializa o nome do Barrel
+        this.barrelName = name;
         index = new HashMap<>();
 
         try {
@@ -45,15 +45,15 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             // Junta-se ao grupo multicast (versão atualizada)
             SocketAddress groupAddress = new InetSocketAddress(group, MULTICAST_RECEIVE_PORT);
             socket.joinGroup(groupAddress, networkInterface);
-            System.out.println("✅ " + barrelName + " conectado ao grupo multicast " + MULTICAST_GROUP);
+            System.out.println(barrelName + " conectado ao grupo multicast " + MULTICAST_GROUP);
 
             // Inicia a Thread para escutar Multicast
             new Thread(() -> {
-                System.out.println("🔄 " + barrelName + " escutando mensagens multicast...");
+                System.out.println(barrelName + " escutando mensagens multicast...");
                 listenForMulticast();
             }).start();
 
-            System.out.println("🎯 " + barrelName + " criado com sucesso");
+            System.out.println(barrelName + " criado com sucesso");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,7 +88,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             infoSet.add(infoAssociada);
             index.put(palavra, infoSet);
         }
-        System.out.println("📌 [" + barrelName + "] Armazenou: " + palavra + " -> " + infoAssociada);
+        System.out.println(barrelName + " Armazenou: " + palavra + " -> " + infoAssociada);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             String infoAssociada = url + " | Título: " + titulo + " | Citação: " + citacao;
             storeDataInIndex(palavra, infoAssociada);
         } else {
-            System.out.println("❌ [" + barrelName + "] Mensagem recebida não está no formato esperado.");
+            System.out.println(barrelName + " Mensagem recebida não está no formato esperado.");
         }
     }
 
