@@ -23,7 +23,7 @@ import java.rmi.RemoteException;
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
     private static URLQueue queue;
-    //private ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
+    private static ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
     private static String titulo;
     private static String citacao;
     private static final String MULTICAST_GROUP = "230.0.0.1";
@@ -91,21 +91,24 @@ public class Downloader {
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
-            System.out.println(Thread.currentThread().getName() + " baixando: " + url);
-            Document doc = Jsoup.connect(url).get();
-            String texto = doc.text();
-            titulo = doc.title();
-            citacao = doc.select("meta[name=description]").attr("content");
-            //Elements links = doc.select("a[href]");
-            //HashSet<String> uniqueUrls = new HashSet<>();
-            // for (Element link : links) {
-            //     String linkAbsoluto = link.absUrl("href");
-            //     if (isValidURL(linkAbsoluto) && processedUrls.putIfAbsent(linkAbsoluto, true) == null) {
-            //         queue.addURL(linkAbsoluto);
-            //         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
-            //     }
-            // }
-            processarPalavras(texto, url);
+            if(!processedUrls.containsKey(url)){
+                processedUrls.put(url, true);
+                System.out.println(Thread.currentThread().getName() + " baixando: " + url);
+                Document doc = Jsoup.connect(url).get();
+                String texto = doc.text();
+                titulo = doc.title();
+                citacao = doc.select("meta[name=description]").attr("content");
+                //Elements links = doc.select("a[href]");
+                //HashSet<String> uniqueUrls = new HashSet<>();
+                // for (Element link : links) {
+                //     String linkAbsoluto = link.absUrl("href");
+                //     if (isValidURL(linkAbsoluto) && processedUrls.putIfAbsent(linkAbsoluto, true) == null) {
+                //         queue.addURL(linkAbsoluto);
+                //         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                //     }
+                // }
+                processarPalavras(texto, url);
+            }
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
             e.printStackTrace();
