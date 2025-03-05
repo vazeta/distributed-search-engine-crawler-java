@@ -10,9 +10,6 @@ import java.net.URISyntaxException;
 
 public class Client extends UnicastRemoteObject implements IntClient { 
     private IClientGateway gateway;
-
-    HashMap<String, HashSet<String>> index = new HashMap<String, HashSet<String>>(); // indice de palavras e urls associadas  //meter no barrel
-
     public Client() throws RemoteException {
         super();
         if (!gatewayconnect()) {

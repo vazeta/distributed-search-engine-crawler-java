@@ -146,15 +146,16 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     }
 
     @Override
-    public List<String> search(String word, int page) throws RemoteException {
-        List<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>())) ;
-        int start = (page - 1) * 10;
-        int end = Math.min(start + 10, results.size());
-        if (start >= results.size()) {
-            return Collections.emptyList();
-        }
-        return results.subList(start, end);
+public List<String> search(String word, int page) throws RemoteException {
+    ArrayList<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>()));
+    int start = (page - 1) * 10;
+    int end = Math.min(start + 10, results.size());
+    if (start >= results.size()) {
+        return new ArrayList<>();
     }
+    return new ArrayList<>(results.subList(start, end));
+}
+
 
     public static void main(String[] args) {
         try {
