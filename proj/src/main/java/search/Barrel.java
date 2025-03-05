@@ -21,20 +21,13 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     private NetworkInterface networkInterface;
     private MulticastSocket socket;
     private String barrelName;
-<<<<<<< HEAD
-=======
     private static final String PAGES_FILE = "paginas.obj";
->>>>>>> 4b0f29a170cfe00724c2009102f2bf939b7ae728
 
     public Barrel(String name) throws RemoteException {
         super();
         this.barrelName = name;
-<<<<<<< HEAD
-        index = new HashMap<>();
-=======
         this.index = StorageUtil.loadData(PAGES_FILE, new HashMap<>());
         System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
->>>>>>> 4b0f29a170cfe00724c2009102f2bf939b7ae728
 
         try {
             // Obtém o grupo multicast

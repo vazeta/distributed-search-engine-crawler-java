@@ -92,12 +92,9 @@ public class Downloader {
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
-<<<<<<< HEAD
             if(!processedUrls.containsKey(url)){
-=======
             HashSet<String> urlList = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
             if(!processedUrls.containsKey(url) && !urlList.contains(url)){
->>>>>>> 4b0f29a170cfe00724c2009102f2bf939b7ae728
                 processedUrls.put(url, true);
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 Document doc = Jsoup.connect(url).get();
