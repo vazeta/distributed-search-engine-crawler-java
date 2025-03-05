@@ -28,6 +28,7 @@ public class Downloader {
     private static String citacao;
     private static final String MULTICAST_GROUP = "230.0.0.1";
     private static final int MULTICAST_PORT = 4447;
+    private static final String LISTA_URLS_FILE = "ListaUrls.obj";
 
     public static void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
@@ -80,7 +81,7 @@ public class Downloader {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, MULTICAST_PORT);
             socket.send(packet);
             socket.close();
-            System.out.println("Mensagem multicast enviada: " + mensagem);
+            //System.out.println("Mensagem multicast enviada: " + mensagem);
         } catch (Exception e) {
             System.out.println("Erro ao enviar mensagem multicast");
             e.printStackTrace();
@@ -91,7 +92,12 @@ public class Downloader {
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
+<<<<<<< HEAD
             if(!processedUrls.containsKey(url)){
+=======
+            HashSet<String> urlList = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
+            if(!processedUrls.containsKey(url) && !urlList.contains(url)){
+>>>>>>> 4b0f29a170cfe00724c2009102f2bf939b7ae728
                 processedUrls.put(url, true);
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 Document doc = Jsoup.connect(url).get();
@@ -108,6 +114,12 @@ public class Downloader {
                 //     }
                 // }
                 processarPalavras(texto, url);
+
+                salvarURL(url);
+                processarPalavras(texto, url);
+            }else{
+                System.out.println("URL:" + url + " ja foi processado.");
+
             }
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
@@ -152,6 +164,15 @@ public class Downloader {
             return scheme != null && (scheme.equals("http") || scheme.equals("https"));
         } catch (URISyntaxException e) {
             return false;
+        }
+    }
+
+    private static void salvarURL(String url) {
+        HashSet<String> urlList = StorageUtil.loadData(LISTA_URLS_FILE, new HashSet<>());
+    
+        if (urlList.add(url)) {  // Adiciona apenas se não existir
+            StorageUtil.saveData(urlList, LISTA_URLS_FILE);
+            System.out.println(" URL salva: " + url);
         }
     }
 }

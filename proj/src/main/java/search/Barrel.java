@@ -21,11 +21,20 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     private NetworkInterface networkInterface;
     private MulticastSocket socket;
     private String barrelName;
+<<<<<<< HEAD
+=======
+    private static final String PAGES_FILE = "paginas.obj";
+>>>>>>> 4b0f29a170cfe00724c2009102f2bf939b7ae728
 
     public Barrel(String name) throws RemoteException {
         super();
         this.barrelName = name;
+<<<<<<< HEAD
         index = new HashMap<>();
+=======
+        this.index = StorageUtil.loadData(PAGES_FILE, new HashMap<>());
+        System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
+>>>>>>> 4b0f29a170cfe00724c2009102f2bf939b7ae728
 
         try {
             // Obtém o grupo multicast
@@ -89,13 +98,20 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             index.put(palavra, infoSet);
         }
         System.out.println(barrelName + " Armazenou: " + palavra + " -> " + infoAssociada);
+
+    
+        System.out.println("[" + barrelName + "] Armazenado: " + palavra + " -> " + infoAssociada);
+    
+        // Salvar índice atualizado
+        StorageUtil.saveData(index, PAGES_FILE);
+
     }
 
     @Override
     public void print_index() throws RemoteException {
-        System.out.println("📋 [" + barrelName + "] Índice Atual:");
+        System.out.println(" [" + barrelName + "] Índice Atual:");
         for (Map.Entry<String, HashSet<String>> entry : index.entrySet()) {
-            System.out.println("🔹 Palavra: " + entry.getKey());
+            System.out.println(" Palavra: " + entry.getKey());
             for (String url : entry.getValue()) {
                 System.out.println("   - " + url);
             }
@@ -108,11 +124,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
             while (true) {
-                System.out.println("🕐 " + barrelName + " aguardando mensagens multicast...");
+                System.out.println( barrelName + " aguardando mensagens multicast...");
                 socket.receive(packet);
 
                 String message = new String(packet.getData(), 0, packet.getLength());
-                System.out.println("🔹 " + barrelName + " recebeu multicast: " + message);
+                System.out.println( barrelName + " recebeu multicast: " + message);
 
                 processReceivedData(message);
             }
