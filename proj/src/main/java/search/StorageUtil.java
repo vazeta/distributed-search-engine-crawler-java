@@ -8,7 +8,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 public class StorageUtil {
-    private static final String DATA_FOLDER = "C:\\Users\\User\\OneDrive\\Ambiente de Trabalho\\3 ANO LEI\\2 SEMESTRE\\SD\\SD_proj\\proj\\data\\";
+    private static final String DATA_FOLDER = "..//data//";
 
 
     public static void saveData(Object data, String fileName) {

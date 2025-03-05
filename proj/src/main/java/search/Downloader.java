@@ -22,7 +22,10 @@ import java.rmi.RemoteException;
 
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
+    private IBarrelGateway barrel;
     private static URLQueue queue;
+    private static ArrayList<String> palavras = new ArrayList<>();
+    //private ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
     private static ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
     private static String titulo;
     private static String citacao;
@@ -63,9 +66,9 @@ public class Downloader {
                     if (url != null) {  
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
                         processarPagina(url, queue);
-                        
+
                     } 
-                 
+
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -81,18 +84,18 @@ public class Downloader {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, MULTICAST_PORT);
             socket.send(packet);
             socket.close();
+            System.out.println("Mensagem multicast enviada: " + mensagem);
             //System.out.println("Mensagem multicast enviada: " + mensagem);
         } catch (Exception e) {
             System.out.println("Erro ao enviar mensagem multicast");
             e.printStackTrace();
         }
     }
-   
+
 
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
-            if(!processedUrls.containsKey(url)){
             HashSet<String> urlList = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
             if(!processedUrls.containsKey(url) && !urlList.contains(url)){
                 processedUrls.put(url, true);
@@ -110,13 +113,10 @@ public class Downloader {
                 //         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
                 //     }
                 // }
-                processarPalavras(texto, url);
-
                 salvarURL(url);
                 processarPalavras(texto, url);
             }else{
                 System.out.println("URL:" + url + " ja foi processado.");
-
             }
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
