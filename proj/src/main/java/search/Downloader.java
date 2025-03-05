@@ -22,9 +22,7 @@ import java.rmi.RemoteException;
 
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
-    private IBarrelGateway barrel;
     private static URLQueue queue;
-    private static ArrayList<String> palavras = new ArrayList<>();
     //private ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
     private static ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
     private static String titulo;
