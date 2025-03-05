@@ -56,7 +56,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     }
 
     @Override
-    public List<String> request_index(String word) throws RemoteException {
+    public List<String> request_index(String word, int page) throws RemoteException {
         Registry registry;
         String[] barrels;
 
@@ -81,7 +81,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                     try {
                         System.out.println("🔍 Tentando conectar ao Barrel: " + selectedBarrel);
                         IBarrelGateway barrel = (IBarrelGateway) registry.lookup(selectedBarrel);
-                        return barrel.search(word);
+                        return barrel.search(word,page);
                     } catch (Exception e) {
                         System.out.println("Erro ao conectar ao Barrel " + selectedBarrel + ". Tentando outro...");
                     }

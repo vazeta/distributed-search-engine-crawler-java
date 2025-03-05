@@ -28,6 +28,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
         this.barrelName = name;
         this.index = StorageUtil.loadData(PAGES_FILE, new HashMap<>());
         System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
+        RegisterBarrel();
 
         try {
             // Obtém o grupo multicast
@@ -145,18 +146,20 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     }
 
     @Override
-    public List<String> search(String word) throws RemoteException {
-        HashSet<String> urls = index.getOrDefault(word, new HashSet<>());
-        return new ArrayList<>(urls);
+    public List<String> search(String word, int page) throws RemoteException {
+        List<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>())) ;
+        int start = (page - 1) * 10;
+        int end = Math.min(start + 10, results.size());
+        if (start >= results.size()) {
+            return Collections.emptyList();
+        }
+        return results.subList(start, end);
     }
 
     public static void main(String[] args) {
         try {
-            Barrel barrel1 = new Barrel("Barrel1");
-            barrel1.RegisterBarrel();
-
-            Barrel barrel2 = new Barrel("Barrel2");
-            barrel2.RegisterBarrel();
+            new Barrel("Barrel1");
+            new Barrel("Barrel2");
 
         } catch (RemoteException e) {
             e.printStackTrace();

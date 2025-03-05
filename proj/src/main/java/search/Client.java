@@ -104,9 +104,20 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         break;
 
                     case 2:
-                        System.out.print(" Digite a palavra a pesquisar: ");
+                        System.out.print("Digite a palavra a pesquisar: ");
                         String word = sc.nextLine();
-                        client.pesquisar(word); //nao usar isto porque nada ta pronto ainda
+                        int page = 1;
+                        boolean continuar = true;
+                        while (continuar) {
+                            client.pesquisar(word, page);
+                            System.out.print("Deseja ver a próxima página? (s/n): ");
+                            String resposta = sc.nextLine().trim().toLowerCase();
+                            if (resposta.equals("s")) {
+                                page++;
+                            } else {
+                                continuar = false;
+                            }
+                        }
                         break;
 
                     case 3:
@@ -123,9 +134,9 @@ public class Client extends UnicastRemoteObject implements IntClient {
         }
     }
 
-    public void pesquisar(String word) throws RemoteException {
+    public void pesquisar(String word, int page) throws RemoteException {
         if (gateway != null) {
-            List<String> resultados = gateway.request_index(word);  
+            List<String> resultados = gateway.request_index(word, page);  
             System.out.println("Palavra enviada para o barrel via Gateway: " + word);
             
             if (resultados != null && !resultados.isEmpty()) {

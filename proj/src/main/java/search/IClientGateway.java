@@ -7,5 +7,5 @@ import java.util.List;
 public interface IClientGateway extends Remote {
     void connectClient(IntClient client) throws RemoteException;
     void addUrlToQueue(String url) throws RemoteException; 
-    List<String> request_index(String word) throws RemoteException;
+    List<String> request_index(String word, int page) throws RemoteException;
 }
