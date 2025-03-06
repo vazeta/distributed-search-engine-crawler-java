@@ -12,3 +12,6 @@ Como correr
 
 
 -> os dowloadrs alteram em simultaneo titulo e citacoa, concurrency
+-> citacoes tem de ter as palavras pesquisadas
+-> é suposto pesquisar so uma palavra ou varias
+-> questao do loop de links
