@@ -12,6 +12,7 @@ Como correr
 -> dowloadrers com 2 ou mais thereads, pelo menos 2 downloads um em cada pc
 ->  2 barrels pelo menos (1 em cada pc)
 -> gateway e client em pcs diferentes (apenas 1)
+-> stats com callback
 
 A FAZER:
 -> os dowloadrs alteram em simultaneo titulo e citacoa, concurrency
