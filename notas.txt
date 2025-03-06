@@ -9,9 +9,10 @@ Como correr
 -> barrel abaixo deve guardar estado e deve ser sincronizado ao voltar
 -> pelo menos 2 barrels
 -> os downloaders escrevem para todos os barrels tem de ter os indices atraves de multicast fiavel (caso esteja algum indisponivel, dar retry)
+-> dowloadrers com 2 ou mais thereads, pelo menos 2 downloads um em cada pc
+->  2 barrels pelo menos (1 em cada pc)
+-> gateway e client em pcs diferentes (apenas 1)
 
-
+A FAZER:
 -> os dowloadrs alteram em simultaneo titulo e citacoa, concurrency
--> citacoes tem de ter as palavras pesquisadas
--> é suposto pesquisar so uma palavra ou varias
--> questao do loop de links
+-> multicast nao é atraves de sockets, multicast sobre o RMI
