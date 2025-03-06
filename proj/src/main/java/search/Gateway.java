@@ -79,8 +79,9 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
                 for (String selectedBarrel : listaBarrels) {
                     try {
-                        System.out.println("🔍 Tentando conectar ao Barrel: " + selectedBarrel);
+                        System.out.println("A tentar conectar ao Barrel: " + selectedBarrel);
                         IBarrelGateway barrel = (IBarrelGateway) registry.lookup(selectedBarrel);
+                        System.out.println("consegui");
                         List<String> results = barrel.search(word, page);
                         return results;
                     } catch (Exception e) {

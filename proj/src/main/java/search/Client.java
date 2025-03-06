@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 
 public class Client extends UnicastRemoteObject implements IntClient { 
     private IClientGateway gateway;
+    private static List<String> resultados = new ArrayList<>();
     public Client() throws RemoteException {
         super();
         if (!gatewayconnect()) {
@@ -107,12 +108,16 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         boolean continuar = true;
                         while (continuar) {
                             client.pesquisar(word, page);
-                            System.out.print("Deseja ver a próxima página? (s/n): ");
-                            String resposta = sc.nextLine().trim().toLowerCase();
-                            if (resposta.equals("s")) {
-                                page++;
-                            } else {
-                                continuar = false;
+                            if(resultados.size() == 10){
+                                System.out.print("Deseja ver a próxima página? (s/n): ");
+                                String resposta = sc.nextLine().trim().toLowerCase();
+                                if (resposta.equals("s")) {
+                                    page++;
+                                } else {
+                                    continuar = false;
+                                }
+                            }else{
+                                continuar= false;
                             }
                         }
                         break;
@@ -133,7 +138,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
     public void pesquisar(String word, int page) throws RemoteException {
         if (gateway != null) {
-            List<String> resultados = gateway.request_index(word, page);  
+            resultados = gateway.request_index(word, page);  
             System.out.println("Palavra enviada para o barrel via Gateway: " + word);
             
             if (resultados != null && !resultados.isEmpty()) {
@@ -148,7 +153,5 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println("Erro: Gateway não está conectado!");
         }
     }
-    
-    
 
 }
