@@ -9,3 +9,6 @@ Como correr
 -> barrel abaixo deve guardar estado e deve ser sincronizado ao voltar
 -> pelo menos 2 barrels
 -> os downloaders escrevem para todos os barrels tem de ter os indices atraves de multicast fiavel (caso esteja algum indisponivel, dar retry)
+
+
+-> os dowloadrs alteram em simultaneo titulo e citacoa, concurrency
