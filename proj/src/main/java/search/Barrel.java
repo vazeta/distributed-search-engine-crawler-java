@@ -132,14 +132,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
     }
 
     private void processReceivedData(String mensagem) {
-        String[] partes = mensagem.split(" ", 4);
-        if (partes.length == 4) {
+        String[] partes = mensagem.split(";", 2);
+        if (partes.length == 2) {
             String palavra = partes[0];
-            String url = partes[1];
-            String titulo = partes[2];
-            String citacao = partes[3];
-            String infoAssociada = url + " | Título: " + titulo + " | Citação: " + citacao;
-            storeDataInIndex(palavra, infoAssociada);
+            String info = partes[1];
+            storeDataInIndex(palavra, info);
         } else {
             System.out.println(barrelName + " Mensagem recebida não está no formato esperado.");
         }

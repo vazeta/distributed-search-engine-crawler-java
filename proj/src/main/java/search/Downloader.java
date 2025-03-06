@@ -19,6 +19,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
+import org.jsoup.nodes.Element;
+
 
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
@@ -30,6 +32,7 @@ public class Downloader {
     private static final String MULTICAST_GROUP = "230.0.0.1";
     private static final int MULTICAST_PORT = 4447;
     private static final String LISTA_URLS_FILE = "ListaUrls.obj";
+    private static final Object lock = new Object();
 
     public static void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
@@ -100,8 +103,21 @@ public class Downloader {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 Document doc = Jsoup.connect(url).get();
                 String texto = doc.text();
-                titulo = doc.title();
-                citacao = doc.select("meta[name=description]").attr("content");
+                synchronized (lock) {
+                    titulo = doc.title();
+                    synchronized (lock) {
+                        titulo = doc.title();
+                        citacao = doc.select("meta[name=description]").attr("content");
+                        // Se não houver meta descrição, pega o primeiro parágrafo visível
+                        if (citacao == null || citacao.isEmpty()) {
+                            Element primeiroParagrafo = doc.select("p").first();
+                            if (primeiroParagrafo != null) {
+                                citacao = primeiroParagrafo.text();
+                            }
+                        }
+                    }
+                    
+                
                 //Elements links = doc.select("a[href]");
                 //HashSet<String> uniqueUrls = new HashSet<>();
                 // for (Element link : links) {
@@ -113,6 +129,7 @@ public class Downloader {
                 // }
                 salvarURL(url);
                 processarPalavras(texto, url);
+                }
             }else{
                 System.out.println("URL:" + url + " ja foi processado.");
             }
@@ -127,7 +144,7 @@ public class Downloader {
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
             if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra) ) {
-                String mensagem = palavra + " " + url + " " + titulo + " " + citacao;
+                String mensagem = palavra + ";URL: " + url + " Titulo: " + titulo + " Citacao: " + citacao;
                 enviarReliableMulticast(mensagem);
             }
         }
