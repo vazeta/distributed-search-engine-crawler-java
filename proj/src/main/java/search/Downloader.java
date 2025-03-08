@@ -37,8 +37,8 @@ public class Downloader {
         carregarStopWords("lib/stopwords.txt");
         try {
             ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
-            Registry registry = LocateRegistry.createRegistry(1097); // Cria o registry RMI na porta 1099
-            registry.rebind("ReliableMulticastService", multicastService); // Registra o serviço
+            Registry registry = LocateRegistry.createRegistry(1097); 
+            registry.rebind("ReliableMulticastService", multicastService);
             System.out.println("ReliableMulticastService registrado com sucesso.");
    
             Registry urlregistry = LocateRegistry.getRegistry(1098);
@@ -94,7 +94,6 @@ public class Downloader {
                     synchronized (lock) {
                         titulo = doc.title();
                         citacao = doc.select("meta[name=description]").attr("content");
-                        // Se não houver meta descrição, pega o primeiro parágrafo visível
                         if (citacao == null || citacao.isEmpty()) {
                             Element primeiroParagrafo = doc.select("p").first();
                             if (primeiroParagrafo != null) {
@@ -177,7 +176,7 @@ public class Downloader {
     private static void salvarURL(String url) {
         HashSet<String> urlList = StorageUtil.loadData(LISTA_URLS_FILE, new HashSet<>());
 
-        if (urlList.add(url)) { // Adiciona apenas se não existir
+        if (urlList.add(url)) {
             StorageUtil.saveData(urlList, LISTA_URLS_FILE);
             System.out.println(" URL salva: " + url);
         }
