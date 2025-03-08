@@ -1,25 +1,15 @@
 package search;
 
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.SocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
-public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
+public class Barrel extends UnicastRemoteObject implements IBarrelGateway, ReliableMulticastClient  {
     private static final long serialVersionUID = 1L;
     private HashMap<String, HashSet<String>> index;
-    private static final String MULTICAST_GROUP = "230.0.0.1";
-    private static final int MULTICAST_RECEIVE_PORT = 4447;
-    private InetAddress group;
-    private NetworkInterface networkInterface;
-    private MulticastSocket socket;
     private String barrelName;
     private static final String PAGES_FILE = "paginas.obj";
 
@@ -29,38 +19,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
         this.index = StorageUtil.loadData(PAGES_FILE, new HashMap<>());
         System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
         RegisterBarrel();
-
-        try {
-            // Obtém o grupo multicast
-            group = InetAddress.getByName(MULTICAST_GROUP);
-
-            // Cria o socket multicast
-            socket = new MulticastSocket(MULTICAST_RECEIVE_PORT);
-            socket.setReuseAddress(true); // Permite reuso da porta
-
-            // Obtém a interface de rede
-            networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
-            if (networkInterface == null) {
-                System.out.println("Erro: Nenhuma interface de rede encontrada.");
-                return;
-            }
-
-            // Junta-se ao grupo multicast (versão atualizada)
-            SocketAddress groupAddress = new InetSocketAddress(group, MULTICAST_RECEIVE_PORT);
-            socket.joinGroup(groupAddress, networkInterface);
-            System.out.println(barrelName + " conectado ao grupo multicast " + MULTICAST_GROUP);
-
-            // Inicia a Thread para escutar Multicast
-            new Thread(() -> {
-                System.out.println(barrelName + " escutando mensagens multicast...");
-                listenForMulticast();
-            }).start();
-
-            System.out.println(barrelName + " criado com sucesso");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        registerWithReliableMulticastService();
     }
 
     private void RegisterBarrel() {
@@ -112,24 +71,26 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway {
         }
     }
 
-    private void listenForMulticast() {
+    private void registerWithReliableMulticastService() {
         try {
-            byte[] buffer = new byte[2048];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
+            ReliableMulticastService multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
 
-            while (true) {
-                System.out.println( barrelName + " aguardando mensagens multicast...");
-                socket.receive(packet);
+            multicastService.registerClient(this);
+            System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
 
-                String message = new String(packet.getData(), 0, packet.getLength());
-                System.out.println( barrelName + " recebeu multicast: " + message);
-
-                processReceivedData(message);
-            }
-        } catch (Exception e) {
+        } catch (RemoteException | NotBoundException e) {
+            System.out.println("Erro ao registrar " + barrelName + " no ReliableMulticastService.");
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void receiveMessage(String message) throws RemoteException {
+        System.out.println("[" + barrelName + "] Mensagem confiável recebida: " + message);
+        processReceivedData(message);
+    }
+
 
     private void processReceivedData(String mensagem) {
         String[] partes = mensagem.split(";", 2);
