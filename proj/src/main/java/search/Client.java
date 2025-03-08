@@ -57,14 +57,22 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println(" Erro: Gateway não está conectado!");
         }
     }
-   public static boolean isValidURL(String url) {//funcao para validar urls usa os imports java.net
-    try {
-        new URI(url).toURL(); 
-        return true;
-    } catch (URISyntaxException | MalformedURLException e) {
-        return false;
+    public static boolean isValidURL(String url) {
+        try {
+            URI uri = new URI(url);
+            
+            // Verifica se tem um esquema válido (http ou https)
+            if (uri.getScheme() == null || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
+                return false;
+            }
+            
+            uri.toURL(); // Isso confirma que a URL pode ser convertida
+            return true;
+        } catch (URISyntaxException | MalformedURLException e) {
+            return false;
+        }
     }
-}
+    
 
     private static void menu(){
         System.out.println("\n ----Bem vindo ao GOOGOL!!!-----");
