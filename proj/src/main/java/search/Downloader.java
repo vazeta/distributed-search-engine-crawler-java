@@ -36,8 +36,8 @@ public class Downloader {
     public static void main(String[] args) throws IOException {
         carregarStopWords("lib/stopwords.txt");
         try {
-            ReliableMulticastService multicastService = new ReliableMulticastClientImpl();
-            Registry registry = LocateRegistry.createRegistry(1099); // Cria o registry RMI na porta 1099
+            ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
+            Registry registry = LocateRegistry.createRegistry(1097); // Cria o registry RMI na porta 1099
             registry.rebind("ReliableMulticastService", multicastService); // Registra o serviço
             System.out.println("ReliableMulticastService registrado com sucesso.");
    
@@ -133,7 +133,7 @@ public class Downloader {
             if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra)) {
                 String mensagem = palavra + ";URL: " + url + " Titulo: " + titulo + " Citacao: " + citacao;
                 try {
-                    Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1099);
+                    Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
                     ReliableMulticastService multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
                     multicastService.sendReliableMessage(mensagem);
                 } catch (RemoteException | NotBoundException e) {
