@@ -15,5 +15,4 @@ Como correr
 -> stats com callback
 
 A FAZER:
--> os dowloadrs alteram em simultaneo titulo e citacoa, concurrency
--> multicast nao é atraves de sockets, multicast sobre o RMI
+-> Citacao nao esta funcionar para alguns sites : ex :https://en.wikipedia.org/wiki/Java_(programming_language)
