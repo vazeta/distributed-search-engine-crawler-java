@@ -32,8 +32,10 @@ public class Downloader {
     private static String citacao;
     private static final String LISTA_URLS_FILE = "ListaUrls.obj";
     private static final Object lock = new Object();
+    private static HashSet<String> urlListFile;
 
     public static void main(String[] args) throws IOException {
+        urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
         carregarStopWords("lib/stopwords.txt");
         try {
             ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
@@ -46,7 +48,7 @@ public class Downloader {
 
             System.out.println("Downloaders iniciados.");
 
-            int numDownloaders = 3;
+            int numDownloaders = 4;
             for (int i = 0; i < numDownloaders; i++) {
                 new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
             }
@@ -54,6 +56,10 @@ public class Downloader {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Ctrl+C detectado! Salvando estado antes de sair...");
+            Guardar();
+        }));
     }
 
     private static class DownloaderTask implements Runnable {
@@ -83,9 +89,7 @@ public class Downloader {
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
-            HashSet<String> urlList = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
-            if (!processedUrls.containsKey(url) && !urlList.contains(url)) {
-                processedUrls.put(url, true);
+            if (!processedUrls.containsKey(url) && !urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 Document doc = Jsoup.connect(url).get();
                 String texto = doc.text();
@@ -102,18 +106,15 @@ public class Downloader {
                         }
                     }
 
-                    // Elements links = doc.select("a[href]");
-                    // HashSet<String> uniqueUrls = new HashSet<>();
-                    // for (Element link : links) {
-                    // String linkAbsoluto = link.absUrl("href");
-                    // if (isValidURL(linkAbsoluto) && processedUrls.putIfAbsent(linkAbsoluto, true)
-                    // == null) {
-                    // queue.addURL(linkAbsoluto);
-                    // System.out.println(Thread.currentThread().getName() + " encontrou nova URL: "
-                    // + linkAbsoluto);
-                    // }
-                    // }
-                    salvarURL(url);
+                    Elements links = doc.select("a[href]");
+                    HashSet<String> uniqueUrls = new HashSet<>();
+                    for (Element link : links) {
+                        String linkAbsoluto = link.absUrl("href");
+                        if (isValidURL(linkAbsoluto) && !processedUrls.containsKey(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
+                            queue.addURL(linkAbsoluto);
+                            System.out.println(Thread.currentThread().getName() + " encontrou nova URL: "+ linkAbsoluto);
+                        }
+                    }
                     processarPalavras(texto, url);
                 }
             } else {
@@ -142,6 +143,12 @@ public class Downloader {
 
             }
         }
+        processedUrls.put(url, true);
+    }
+    private static void Guardar(){
+        for(String url:processedUrls.keySet()){
+            salvarURL(url);
+        }
     }
 
     private static boolean isStopWord(String word) {
@@ -163,7 +170,7 @@ public class Downloader {
         }
     }
 
-    public boolean isValidURL(String url) {
+    public static boolean isValidURL(String url) {
         try {
             URI uri = new URI(url);
             String scheme = uri.getScheme();
