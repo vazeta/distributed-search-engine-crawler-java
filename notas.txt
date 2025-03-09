@@ -16,4 +16,4 @@ Como correr
 
 A FAZER:
 -> Citacao nao esta funcionar para alguns sites : ex :https://en.wikipedia.org/wiki/Java_(programming_language)
--> Algumas palavras nao estao associadas bem ao site
+-> Algumas palavras nao estao associadas bem ao site(ou seja, procuro uma palavra aparece links e alguns deles nem squer tem essa palavra)
