@@ -25,30 +25,34 @@ import org.jsoup.nodes.Element;
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
     private static URLQueue queue;
-    // private ConcurrentMap<String, Boolean> processedUrls = new
-    // ConcurrentHashMap<>();
-    private static ConcurrentMap<String, Boolean> processedUrls = new ConcurrentHashMap<>();
-    private static String titulo;
-    private static String citacao;
     private static final String LISTA_URLS_FILE = "ListaUrls.obj";
-    private static final Object lock = new Object();
     private static HashSet<String> urlListFile;
-
+    private static ReliableMulticastService multicastService1;
+    private static int size_inicial;
     public static void main(String[] args) throws IOException {
         urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
+        size_inicial=urlListFile.size();
         carregarStopWords("lib/stopwords.txt");
         try {
             ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
-            Registry registry = LocateRegistry.createRegistry(1097); 
-            registry.rebind("ReliableMulticastService", multicastService);
+            Registry registry1 = LocateRegistry.createRegistry(1097); 
+            registry1.rebind("ReliableMulticastService", multicastService);
             System.out.println("ReliableMulticastService registrado com sucesso.");
+
+            Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
+            try {
+                multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
+            } catch (NotBoundException e) {
+                System.out.println("Reliable multicast nao encontrado");
+                e.printStackTrace();
+            }
    
             Registry urlregistry = LocateRegistry.getRegistry(1098);
             queue = (URLQueue) urlregistry.lookup("URLQueue");
 
             System.out.println("Downloaders iniciados.");
 
-            int numDownloaders = 4;
+            int numDownloaders = 1;
             for (int i = 0; i < numDownloaders; i++) {
                 new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
             }
@@ -58,7 +62,7 @@ public class Downloader {
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Ctrl+C detectado! Salvando estado antes de sair...");
-            Guardar();
+            Guardar(size_inicial);
         }));
     }
 
@@ -89,34 +93,30 @@ public class Downloader {
 
     private static void processarPagina(String url, URLQueue queue) {
         try {
-            if (!processedUrls.containsKey(url) && !urlListFile.contains(url)) {
+            if (!urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 Document doc = Jsoup.connect(url).get();
                 String texto = doc.text();
-                synchronized (lock) {
-                    titulo = doc.title();
-                    synchronized (lock) {
-                        titulo = doc.title();
-                        citacao = doc.select("meta[name=description]").attr("content");
+                        String titulo = doc.title();
+                        String citacao = doc.select("meta[name=description]").attr("content");
                         if (citacao == null || citacao.isEmpty()) {
                             Element primeiroParagrafo = doc.select("p").first();
                             if (primeiroParagrafo != null) {
                                 citacao = primeiroParagrafo.text();
                             }
                         }
-                    }
 
                     Elements links = doc.select("a[href]");
                     HashSet<String> uniqueUrls = new HashSet<>();
                     for (Element link : links) {
                         String linkAbsoluto = link.absUrl("href");
-                        if (isValidURL(linkAbsoluto) && !processedUrls.containsKey(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
+                        if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
                             queue.addURL(linkAbsoluto);
                             System.out.println(Thread.currentThread().getName() + " encontrou nova URL: "+ linkAbsoluto);
                         }
                     }
-                    processarPalavras(texto, url);
-                }
+                    processarPalavras(texto, url, titulo, citacao);
+                    System.out.println("LINK PROCESSADO!!!!!");
             } else {
                 System.out.println("URL:" + url + " ja foi processado.");
             }
@@ -126,30 +126,30 @@ public class Downloader {
         }
     }
 
-    private static void processarPalavras(String texto, String url) {
+    private static void processarPalavras(String texto, String url, String titulo, String citacao) {
         StringTokenizer tokenizer = new StringTokenizer(texto, " \t\n\r\f.,;:!?()[]\"'");
         while (tokenizer.hasMoreTokens()) {
             String palavra = tokenizer.nextToken().toLowerCase();
             if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra)) {
                 String mensagem = palavra + ";URL: " + url + " Titulo: " + titulo + " Citacao: " + citacao;
                 try {
-                    Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
-                    ReliableMulticastService multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
-                    multicastService.sendReliableMessage(mensagem);
-                } catch (RemoteException | NotBoundException e) {
+                    multicastService1.sendReliableMessage(mensagem);
+                } catch (RemoteException  e) {
                     System.out.println("Erro ao enviar mensagem via ReliableMulticastService");
                     e.printStackTrace();
                 }
 
             }
         }
-        processedUrls.put(url, true);
+        urlListFile.add(url);
     }
-    private static void Guardar(){
-        for(String url:processedUrls.keySet()){
-            salvarURL(url);
+    private static void Guardar(int sizeInicial) {
+        List<String> urlList = new ArrayList<>(urlListFile);
+        for (int i = sizeInicial; i < urlList.size(); i++) {
+            salvarURL(urlList.get(i));
         }
     }
+    
 
     private static boolean isStopWord(String word) {
         return stop_words.contains(word);
