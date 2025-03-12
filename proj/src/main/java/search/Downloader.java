@@ -9,9 +9,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jsoup.UnsupportedMimeTypeException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import org.jsoup.HttpStatusException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.DatagramPacket;
@@ -128,6 +130,11 @@ public class Downloader {
             } else {
                 System.out.println("URL:" + url + " ja foi processado.");
             }
+        } catch (UnsupportedMimeTypeException e) {
+            // Se for um PDF ou outro tipo não suportado, apenas imprimir e continuar
+            System.out.println("Tipo de arquivo não suportado (" + e.getMimeType() + "): " + url);
+        } catch (HttpStatusException e) {
+            System.out.println("Erro HTTP: " + e.getStatusCode() + " ao acessar: " + url);
         } catch (Exception e) {
             System.out.println("Erro ao processar a URL: " + url);
             e.printStackTrace();
