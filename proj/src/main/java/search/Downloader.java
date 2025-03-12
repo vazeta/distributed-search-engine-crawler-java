@@ -35,11 +35,19 @@ public class Downloader {
         carregarStopWords("lib/stopwords.txt");
         try {
             ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
-            Registry registry1 = LocateRegistry.createRegistry(1097); 
-            registry1.rebind("ReliableMulticastService", multicastService);
+            Registry registry;
+
+            try {
+                // Tenta obter um registro existente
+                registry = LocateRegistry.getRegistry(1097);
+                registry.list(); // Testa se o registro já está disponível
+            } catch (Exception e) {
+                // Se não existir, cria um novo
+                registry = LocateRegistry.createRegistry(1097);
+            }
+            registry.rebind("ReliableMulticastService", multicastService);
             System.out.println("ReliableMulticastService registrado com sucesso.");
 
-            Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
             try {
                 multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
             } catch (NotBoundException e) {
@@ -52,7 +60,7 @@ public class Downloader {
 
             System.out.println("Downloaders iniciados.");
 
-            int numDownloaders = 1;
+            int numDownloaders = 2;
             for (int i = 0; i < numDownloaders; i++) {
                 new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
             }
