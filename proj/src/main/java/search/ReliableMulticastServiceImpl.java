@@ -17,7 +17,7 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
 
     @Override
     public synchronized void sendReliableMessage(String message) throws RemoteException {
-        System.out.println("Enviando mensagem confiável: " + message);
+        //System.out.println("Enviando mensagem confiável: " + message);
         for (ReliableMulticastClient client : clients) {
             try {
                 client.receiveMessage(message);

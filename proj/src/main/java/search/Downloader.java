@@ -32,9 +32,10 @@ public class Downloader {
     private static HashSet<String> urlListFile;
     private static ReliableMulticastService multicastService1;
     private static int size_inicial;
+
     public static void main(String[] args) throws IOException {
         urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
-        size_inicial=urlListFile.size();
+        size_inicial = urlListFile.size();
         carregarStopWords("lib/stopwords.txt");
         try {
             ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
@@ -57,7 +58,7 @@ public class Downloader {
                 System.out.println("Reliable multicast nao encontrado");
                 e.printStackTrace();
             }
-   
+
             Registry urlregistry = LocateRegistry.getRegistry(1098);
             queue = (URLQueue) urlregistry.lookup("URLQueue");
 
@@ -106,45 +107,52 @@ public class Downloader {
         try {
             if (!urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
-                
+                HashSet<String> uniqueUrls = new HashSet<>();
+                uniqueUrls.add(url);
                 // Faz o download da página
                 Document doc = Jsoup.connect(url).get();
                 String texto = doc.text();
                 String titulo = doc.title();
                 String citacao = doc.select("meta[name=description]").attr("content");
-                
+
                 if (citacao == null || citacao.isEmpty()) {
                     Element primeiroParagrafo = doc.select("p").first();
                     if (primeiroParagrafo != null) {
                         citacao = primeiroParagrafo.text();
                     }
                 }
-    
+
                 // Captura todos os links na página
-                    
-                
+
                 Elements links = doc.select("a[href]");
-                HashSet<String> uniqueUrls = new HashSet<>();
                 for (Element link : links) {
                     String linkAbsoluto = link.absUrl("href");
-                    if (isValidURL(linkAbsoluto) &&!urlListFile.contains(linkAbsoluto)) {
+
+                    // Remover fragmento (#...) do link
+                    int hashIndex = linkAbsoluto.indexOf("#");
+                    if (hashIndex != -1) {
+                        System.out.println("link ignorado"+ "->"+ linkAbsoluto);
+                        linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
+                    }
+
+                    if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto) && !uniqueUrls.contains(linkAbsoluto)) {
                         queue.addURL(linkAbsoluto);
                         uniqueUrls.add(linkAbsoluto);
                         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
                     }
                 }
                 saveRelation(url, uniqueUrls);
-                
+
                 processarPalavras(texto, url, titulo, citacao);
                 System.out.println("LINK PROCESSADO!!!!!");
             } else {
                 System.out.println("URL: " + url + " já foi processado.");
             }
-            
+
         } catch (UnsupportedMimeTypeException e) {
             // Ignora PDFs e outros tipos não suportados
             System.out.println("Ignorando URL não suportada (" + e.getMimeType() + "): " + url);
-            
+
         } catch (HttpStatusException e) {
             // Trata erro 404 ou outros erros HTTP
             if (e.getStatusCode() == 404) {
@@ -152,10 +160,10 @@ public class Downloader {
             } else {
                 System.out.println("Erro HTTP " + e.getStatusCode() + " ao acessar: " + url);
             }
-            
+
         } catch (IOException e) {
             System.out.println("Erro de conexão ao acessar a URL: " + url);
-            
+
         } catch (Exception e) {
             System.out.println("Erro inesperado ao processar a URL: " + url);
             e.printStackTrace();
@@ -170,7 +178,7 @@ public class Downloader {
                 String mensagem = palavra + ";URL: " + url + " Titulo: " + titulo + " Citacao: " + citacao;
                 try {
                     multicastService1.sendReliableMessage(mensagem);
-                } catch (RemoteException  e) {
+                } catch (RemoteException e) {
                     System.out.println("Erro ao enviar mensagem via ReliableMulticastService");
                     e.printStackTrace();
                 }
@@ -179,13 +187,13 @@ public class Downloader {
         }
         urlListFile.add(url);
     }
+
     private static void Guardar(int sizeInicial) {
         List<String> urlList = new ArrayList<>(urlListFile);
         for (int i = sizeInicial; i < urlList.size(); i++) {
             salvarURL(urlList.get(i));
         }
     }
-    
 
     private static boolean isStopWord(String word) {
         return stop_words.contains(word);
@@ -224,18 +232,17 @@ public class Downloader {
             System.out.println(" URL salva: " + url);
         }
 
-    
     }
 
     private static void saveRelation(String urlOrigem, HashSet<String> linksInternos) {
-        for(String atual : linksInternos){
-            String mens = "flag/" +" "+ atual + " " + urlOrigem;
+        for (String atual : linksInternos) {
+            String mens = "flag/" + " " + atual + " " + urlOrigem;
             try {
                 multicastService1.sendReliableMessage(mens);
             } catch (RemoteException e) {
-               e.printStackTrace();
+                e.printStackTrace();
             }
-            
+
         }
     }
 }

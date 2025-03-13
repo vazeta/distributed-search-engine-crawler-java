@@ -20,4 +20,5 @@ A FAZER:
 -> stats com callback
 -> pergutar sobre body content -> https://pt.wikipedia.org/wiki/Josep_Guardiola#bodyContent -> https://pt.wikipedia.org/wiki/Josep_Guardiola
 -> paginacao nao esta totalmente bem
--> Temos servidores RMI a mais 
+-> Temos servidores RMI a mais
+-> acentos
