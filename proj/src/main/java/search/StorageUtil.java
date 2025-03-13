@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 
 public class StorageUtil {
     private static final String DATA_FOLDER = "..//data//";
@@ -27,7 +28,7 @@ public class StorageUtil {
 
     
     @SuppressWarnings("unchecked")
-    public static <T> T loadData(String filename, T defaulValue){
+    public static <T> T loadData(String filename, T defaulValue){   
         String filePath = DATA_FOLDER + filename;
         File file = new File(filePath);
 
@@ -47,5 +48,10 @@ public class StorageUtil {
             return defaulValue;
         }
     }
+
+    public static void printData(String fileName) {
+    Object data = loadData(fileName, new HashMap<>());
+    System.out.println("Conteúdo de " + fileName + ": " + data);
+}
     
 }

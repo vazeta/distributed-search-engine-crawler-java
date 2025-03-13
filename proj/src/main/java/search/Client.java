@@ -115,6 +115,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         int page = 1;
                         boolean continuar = true;
                         while (continuar) {
+                            StorageUtil.printData("RelacionamentoLinks.obj");
                             client.pesquisar(word, page);
                             if(resultados.size() == 10){
                                 System.out.print("Deseja ver a próxima página? (s/n): ");
@@ -134,6 +135,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         System.out.println("A sair do Googol...");
                         sc.close();
                         return;
+                   
 
                     default:
                         System.out.println("Opção inválida! Tente novamente.");

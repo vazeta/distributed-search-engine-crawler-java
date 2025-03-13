@@ -24,7 +24,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.Jsoup;
 import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.HttpStatusException;
-import java.util.HashSet;
 
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
@@ -122,16 +121,20 @@ public class Downloader {
                 }
     
                 // Captura todos os links na página
+                    
+                
                 Elements links = doc.select("a[href]");
                 HashSet<String> uniqueUrls = new HashSet<>();
                 for (Element link : links) {
                     String linkAbsoluto = link.absUrl("href");
                     if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
                         queue.addURL(linkAbsoluto);
+                        uniqueUrls.add(linkAbsoluto);
                         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
                     }
                 }
-    
+                saveRelation(url, uniqueUrls);
+                
                 processarPalavras(texto, url, titulo, citacao);
                 System.out.println("LINK PROCESSADO!!!!!");
             } else {
@@ -220,5 +223,18 @@ public class Downloader {
             StorageUtil.saveData(urlList, LISTA_URLS_FILE);
             System.out.println(" URL salva: " + url);
         }
+
+    
+    }
+
+    private static void saveRelation(String urlOrigem, HashSet<String> linksInternos) {
+        HashMap<String, HashSet<String>> linkGraph = StorageUtil.loadData("RelacionamentoLinks.obj", new HashMap<>());
+    
+        for (String destino : linksInternos) {
+            linkGraph.computeIfAbsent(destino, k -> new HashSet<>()).add(urlOrigem);
+        }
+    
+        StorageUtil.saveData(linkGraph, "RelacionamentoLinks.obj");
+        System.out.println("Links internos associados ao destino salvos.");
     }
 }

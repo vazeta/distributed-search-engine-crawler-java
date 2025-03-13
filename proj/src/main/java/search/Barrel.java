@@ -105,7 +105,15 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     @Override
 public List<String> search(String word, int page) throws RemoteException {
+
+    HashMap<String, HashSet<String>> linkGraph = StorageUtil.loadData("RelacionamentoLinks.obj", new HashMap<>());
     ArrayList<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>()));
+
+    results.sort((a, b) -> Integer.compare(
+            linkGraph.getOrDefault(b, new HashSet<>()).size(),
+            linkGraph.getOrDefault(a, new HashSet<>()).size()
+    ));
+    
     int start = (page - 1) * 10;
     int end = Math.min(start + 10, results.size());
     if (start >= results.size()) {
