@@ -12,12 +12,13 @@ Como correr
 -> dowloadrers com 2 ou mais thereads, pelo menos 2 downloads um em cada pc
 ->  2 barrels pelo menos (1 em cada pc)
 -> gateway e client em pcs diferentes (apenas 1)
--> stats com callback
+
 
 A FAZER:
 -> Citacao nao esta funcionar para alguns sites : ex :https://en.wikipedia.org/wiki/Java_(programming_language)
 -> Algumas palavras nao estao associadas bem ao site(ou seja, procuro uma palavra aparece links e alguns deles nem squer tem essa palavra)
 -> Caching na pesquisa
+-> stats com callback
 -> Dowloader muito lento, devido ao lock
 -> pergutar sobre body content -> https://pt.wikipedia.org/wiki/Josep_Guardiola#bodyContent -> https://pt.wikipedia.org/wiki/Josep_Guardiola
 -> perguntar sobre palavras que aparecem no html e nao aparecem no site ex "equipa" -> https://www.uc.pt/governo
