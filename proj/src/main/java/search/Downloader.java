@@ -127,10 +127,19 @@ public class Downloader {
                 HashSet<String> uniqueUrls = new HashSet<>();
                 for (Element link : links) {
                     String linkAbsoluto = link.absUrl("href");
-                    if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
+                    if (isValidURL(linkAbsoluto) &&!urlListFile.contains(linkAbsoluto)) {
+                        if(linkAbsoluto.contains("#")){
+                            String link1 = linkAbsoluto.split("#")[0];
+                            if(isValidURL(link1) && !urlListFile.contains(link1)){
+                                queue.addURL(link1);
+                                uniqueUrls.add(link1);
+                                System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                            }
+                        }else{
                         queue.addURL(linkAbsoluto);
                         uniqueUrls.add(linkAbsoluto);
                         System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                        }
                     }
                 }
                 saveRelation(url, uniqueUrls);

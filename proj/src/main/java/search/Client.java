@@ -141,6 +141,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         }
                         break;
 
+
                     case 4:
                         System.out.println("A sair do Googol...");
                         sc.close();
