@@ -22,3 +22,4 @@ A FAZER:
 -> Dowloader muito lento, devido ao lock
 -> pergutar sobre body content -> https://pt.wikipedia.org/wiki/Josep_Guardiola#bodyContent -> https://pt.wikipedia.org/wiki/Josep_Guardiola
 -> perguntar sobre palavras que aparecem no html e nao aparecem no site ex "equipa" -> https://www.uc.pt/governo
+-> paginacao nao esta totalmente bem
