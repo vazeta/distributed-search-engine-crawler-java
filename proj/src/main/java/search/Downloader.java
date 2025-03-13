@@ -102,7 +102,7 @@ public class Downloader {
         }
     }
 
-    private static void processarPagina(String url, URLQueue queue) {
+    synchronized private static void processarPagina(String url, URLQueue queue) {
         try {
             if (!urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);

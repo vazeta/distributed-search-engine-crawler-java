@@ -139,10 +139,15 @@ public List<String> search(String word, int page) throws RemoteException {
     
 
     results.sort((a, b) -> {
-        int countA = linksCorr.getOrDefault(a, new HashSet<>()).size();
-        int countB = linksCorr.getOrDefault(b, new HashSet<>()).size();
-        return Integer.compare(countB, countA); // Inverter para ordem decrescente
+        // Extrair apenas o URL da string
+        String urlA = a.split("URL: ")[1].split(" ")[0]; // Assume que o URL está após "URL: " e termina antes do primeiro espaço
+        String urlB = b.split("URL: ")[1].split(" ")[0]; // Mesma coisa para b
+    
+        int countA = linksCorr.getOrDefault(urlA, new HashSet<>()).size();
+        int countB = linksCorr.getOrDefault(urlB, new HashSet<>()).size();
+        return Integer.compare(countB, countA); // Ordenar em ordem decrescente
     });
+    
 
     System.out.println("DEPOIS DO SORT-----------------------------------------------");
     for(String s: results){
