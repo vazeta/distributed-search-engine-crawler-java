@@ -21,6 +21,10 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import org.jsoup.nodes.Element;
+import org.jsoup.Jsoup;
+import org.jsoup.UnsupportedMimeTypeException;
+import org.jsoup.HttpStatusException;
+import java.util.HashSet;
 
 public class Downloader {
     private static Set<String> stop_words = new HashSet<>();
@@ -103,33 +107,54 @@ public class Downloader {
         try {
             if (!urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
+                
+                // Faz o download da página
                 Document doc = Jsoup.connect(url).get();
                 String texto = doc.text();
-                        String titulo = doc.title();
-                        String citacao = doc.select("meta[name=description]").attr("content");
-                        if (citacao == null || citacao.isEmpty()) {
-                            Element primeiroParagrafo = doc.select("p").first();
-                            if (primeiroParagrafo != null) {
-                                citacao = primeiroParagrafo.text();
-                            }
-                        }
-
-                    Elements links = doc.select("a[href]");
-                    HashSet<String> uniqueUrls = new HashSet<>();
-                    for (Element link : links) {
-                        String linkAbsoluto = link.absUrl("href");
-                        if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
-                            queue.addURL(linkAbsoluto);
-                            System.out.println(Thread.currentThread().getName() + " encontrou nova URL: "+ linkAbsoluto);
-                        }
+                String titulo = doc.title();
+                String citacao = doc.select("meta[name=description]").attr("content");
+                
+                if (citacao == null || citacao.isEmpty()) {
+                    Element primeiroParagrafo = doc.select("p").first();
+                    if (primeiroParagrafo != null) {
+                        citacao = primeiroParagrafo.text();
                     }
-                    processarPalavras(texto, url, titulo, citacao);
-                    System.out.println("LINK PROCESSADO!!!!!");
+                }
+    
+                // Captura todos os links na página
+                Elements links = doc.select("a[href]");
+                HashSet<String> uniqueUrls = new HashSet<>();
+                for (Element link : links) {
+                    String linkAbsoluto = link.absUrl("href");
+                    if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)) {
+                        queue.addURL(linkAbsoluto);
+                        System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                    }
+                }
+    
+                processarPalavras(texto, url, titulo, citacao);
+                System.out.println("LINK PROCESSADO!!!!!");
             } else {
-                System.out.println("URL:" + url + " ja foi processado.");
+                System.out.println("URL: " + url + " já foi processado.");
             }
+            
+        } catch (UnsupportedMimeTypeException e) {
+            // Ignora PDFs e outros tipos não suportados
+            System.out.println("Ignorando URL não suportada (" + e.getMimeType() + "): " + url);
+            
+        } catch (HttpStatusException e) {
+            // Trata erro 404 ou outros erros HTTP
+            if (e.getStatusCode() == 404) {
+                System.out.println("Erro 404: Página não encontrada - " + url);
+            } else {
+                System.out.println("Erro HTTP " + e.getStatusCode() + " ao acessar: " + url);
+            }
+            
+        } catch (IOException e) {
+            System.out.println("Erro de conexão ao acessar a URL: " + url);
+            
         } catch (Exception e) {
-            System.out.println("Erro ao processar a URL: " + url);
+            System.out.println("Erro inesperado ao processar a URL: " + url);
             e.printStackTrace();
         }
     }

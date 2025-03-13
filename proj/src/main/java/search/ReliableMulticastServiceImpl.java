@@ -1,5 +1,7 @@
 package search;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashSet;
@@ -21,7 +23,13 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
                 client.receiveMessage(message);
             } catch (RemoteException e) {
                 System.out.println("Erro ao enviar mensagem para um cliente.");
-                e.printStackTrace();
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                String stackTrace = sw.toString();
+
+                // Agora você pode imprimir a pilha de erro ou manipulá-la como desejar
+                System.out.println(stackTrace);
             }
         }
     }
