@@ -61,16 +61,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     }
 
-    @Override
-    public void print_index() throws RemoteException {
-        //System.out.println(" [" + barrelName + "] Índice Atual:");
-        for (Map.Entry<String, HashSet<String>> entry : index.entrySet()) {
-            // System.out.println(" Palavra: " + entry.getKey());
-            for (String url : entry.getValue()) {
-                //System.out.println("   - " + url);
-            }
-        }
-    }
 
     private void registerWithReliableMulticastService() {
         try {
