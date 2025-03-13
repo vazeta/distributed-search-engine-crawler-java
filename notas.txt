@@ -16,10 +16,8 @@ Como correr
 
 A FAZER:
 -> Citacao nao esta funcionar para alguns sites : ex :https://en.wikipedia.org/wiki/Java_(programming_language)
--> Algumas palavras nao estao associadas bem ao site(ou seja, procuro uma palavra aparece links e alguns deles nem squer tem essa palavra)
 -> Caching na pesquisa
 -> stats com callback
--> Dowloader muito lento, devido ao lock
 -> pergutar sobre body content -> https://pt.wikipedia.org/wiki/Josep_Guardiola#bodyContent -> https://pt.wikipedia.org/wiki/Josep_Guardiola
--> perguntar sobre palavras que aparecem no html e nao aparecem no site ex "equipa" -> https://www.uc.pt/governo
 -> paginacao nao esta totalmente bem
+-> Temos servidores RMI a mais 
