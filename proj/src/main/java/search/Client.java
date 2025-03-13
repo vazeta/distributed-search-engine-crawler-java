@@ -79,7 +79,8 @@ public class Client extends UnicastRemoteObject implements IntClient {
         System.out.println("Selecione uma das seguintes opções:");
         System.out.println("1 - Indexar um novo URL");
         System.out.println("2 - Fazer uma pesquisa");
-        System.out.println("3 -  Sair");
+        System.out.println("3 - Saber as páginas que apontam para uma certa página");
+        System.out.println("4 -  Sair");
         System.out.print("Escolha: ");
 
     }
@@ -131,6 +132,16 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         break;
 
                     case 3:
+                        System.out.println("Introduza o link:");
+                        String url1 = sc.nextLine();
+                        if (isValidURL(url1)) {
+                            System.out.println("ddadada"); 
+                        } else {
+                            System.out.println("Erro: O que inseriste não é um URL válido!");
+                        }
+                        break;
+
+                    case 4:
                         System.out.println("A sair do Googol...");
                         sc.close();
                         return;
