@@ -10,6 +10,7 @@ import java.util.*;
 public class Barrel extends UnicastRemoteObject implements IBarrelGateway, ReliableMulticastClient  {
     private static final long serialVersionUID = 1L;
     private HashMap<String, HashSet<String>> index;
+    private HashMap<String, HashSet<String>> linksCorr = new HashMap<>();
     private String barrelName;
     private static final String PAGES_FILE = "paginas.obj";
 
@@ -50,10 +51,10 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             infoSet.add(infoAssociada);
             index.put(palavra, infoSet);
         }
-        System.out.println(barrelName + " Armazenou: " + palavra + " -> " + infoAssociada);
+        // System.out.println(barrelName + " Armazenou: " + palavra + " -> " + infoAssociada);
 
     
-        System.out.println("[" + barrelName + "] Armazenado: " + palavra + " -> " + infoAssociada);
+        // System.out.println("[" + barrelName + "] Armazenado: " + palavra + " -> " + infoAssociada);
     
         // Salvar índice atualizado
         StorageUtil.saveData(index, PAGES_FILE);
@@ -62,11 +63,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     @Override
     public void print_index() throws RemoteException {
-        System.out.println(" [" + barrelName + "] Índice Atual:");
+        //System.out.println(" [" + barrelName + "] Índice Atual:");
         for (Map.Entry<String, HashSet<String>> entry : index.entrySet()) {
-            System.out.println(" Palavra: " + entry.getKey());
+            // System.out.println(" Palavra: " + entry.getKey());
             for (String url : entry.getValue()) {
-                System.out.println("   - " + url);
+                //System.out.println("   - " + url);
             }
         }
     }
@@ -87,8 +88,12 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     @Override
     public void receiveMessage(String message) throws RemoteException {
-        System.out.println("[" + barrelName + "] Mensagem confiável recebida: " + message);
-        processReceivedData(message);
+        // System.out.println("[" + barrelName + "] Mensagem confiável recebida: " + message);
+        if(message.startsWith("flag/")){
+            saveIndex(message);
+        }else{
+            processReceivedData(message);
+        }
     }
 
 
@@ -103,16 +108,46 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         }
     }
 
+    private void saveIndex(String mensagem){
+        String[] partes = mensagem.split(" ");
+        if(partes.length == 3){
+            String link = partes[1];
+            String origem = partes[2];
+            if(linksCorr.containsKey(link)){
+                linksCorr.get(link).add(origem);
+            }else{
+                HashSet<String> links = new HashSet<>();
+                links.add(origem);
+                linksCorr.put(link, links);
+            }
+        }
+    }
+
     @Override
 public List<String> search(String word, int page) throws RemoteException {
 
-    HashMap<String, HashSet<String>> linkGraph = StorageUtil.loadData("RelacionamentoLinks.obj", new HashMap<>());
     ArrayList<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>()));
 
-    results.sort((a, b) -> Integer.compare(
-            linkGraph.getOrDefault(b, new HashSet<>()).size(),
-            linkGraph.getOrDefault(a, new HashSet<>()).size()
-    ));
+    for (Map.Entry<String, HashSet<String>> entry : linksCorr.entrySet()) {
+        System.out.println("Link: " + entry.getKey() + " -> Origem: " + entry.getValue());
+    }
+
+    System.out.println("ANTES DO SORT----------------------------------------");
+    for(String s: results){
+        System.out.println(s);
+    }
+    
+
+    results.sort((a, b) -> {
+        int countA = linksCorr.getOrDefault(a, new HashSet<>()).size();
+        int countB = linksCorr.getOrDefault(b, new HashSet<>()).size();
+        return Integer.compare(countB, countA); // Inverter para ordem decrescente
+    });
+
+    System.out.println("DEPOIS DO SORT-----------------------------------------------");
+    for(String s: results){
+        System.out.println(s);
+    }
     
     int start = (page - 1) * 10;
     int end = Math.min(start + 10, results.size());

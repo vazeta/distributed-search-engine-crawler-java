@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
 
 public class StorageUtil {
     private static final String DATA_FOLDER = "..//data//";
@@ -18,7 +17,7 @@ public class StorageUtil {
              ObjectOutputStream objOut = new ObjectOutputStream(fileOut)) {
 
             objOut.writeObject(data);
-            System.out.println(" Dados salvos em: " + filePath);
+            //System.out.println(" Dados salvos em: " + filePath);
 
         } catch (IOException e) {
             System.err.println(" Erro ao salvar arquivo: " + filePath);
@@ -48,10 +47,5 @@ public class StorageUtil {
             return defaulValue;
         }
     }
+}
 
-    public static void printData(String fileName) {
-    Object data = loadData(fileName, new HashMap<>());
-    System.out.println("Conteúdo de " + fileName + ": " + data);
-}
-    
-}

@@ -227,14 +227,15 @@ public class Downloader {
     
     }
 
-    private static void saveRelation(String urlOrigem, HashSet<String> linksInternos) {
-        HashMap<String, HashSet<String>> linkGraph = StorageUtil.loadData("RelacionamentoLinks.obj", new HashMap<>());
-    
-        for (String destino : linksInternos) {
-            linkGraph.computeIfAbsent(destino, k -> new HashSet<>()).add(urlOrigem);
+    synchronized private static void saveRelation(String urlOrigem, HashSet<String> linksInternos) {
+        for(String atual : linksInternos){
+            String mens = "flag/" +" "+ atual + " " + urlOrigem;
+            try {
+                multicastService1.sendReliableMessage(mens);
+            } catch (RemoteException e) {
+               e.printStackTrace();
+            }
+            
         }
-    
-        StorageUtil.saveData(linkGraph, "RelacionamentoLinks.obj");
-        System.out.println("Links internos associados ao destino salvos.");
     }
 }
