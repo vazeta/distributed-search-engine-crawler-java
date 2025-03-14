@@ -7,7 +7,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
-public class Barrel extends UnicastRemoteObject implements IBarrelGateway, ReliableMulticastClient  {
+public class Barrel extends UnicastRemoteObject implements IBarrelGateway, ReliableMulticastClient {
     private static final long serialVersionUID = 1L;
     private HashMap<String, HashSet<String>> index;
     private HashMap<String, HashSet<String>> linksCorr = new HashMap<>();
@@ -36,7 +36,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             }
 
             registry.rebind(barrelName, this);
-            System.out.println( barrelName + " registrado no RMI.");
+            System.out.println(barrelName + " registrado no RMI.");
         } catch (RemoteException e) {
             System.out.println("Erro ao registrar " + barrelName + " no RMI.");
             e.printStackTrace();
@@ -51,21 +51,22 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             infoSet.add(infoAssociada);
             index.put(palavra, infoSet);
         }
-        // System.out.println(barrelName + " Armazenou: " + palavra + " -> " + infoAssociada);
+        // System.out.println(barrelName + " Armazenou: " + palavra + " -> " +
+        // infoAssociada);
 
-    
-        // System.out.println("[" + barrelName + "] Armazenado: " + palavra + " -> " + infoAssociada);
-    
+        // System.out.println("[" + barrelName + "] Armazenado: " + palavra + " -> " +
+        // infoAssociada);
+
         // Salvar índice atualizado
         StorageUtil.saveData(index, PAGES_FILE);
 
     }
 
-
     private void registerWithReliableMulticastService() {
         try {
             Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
-            ReliableMulticastService multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
+            ReliableMulticastService multicastService = (ReliableMulticastService) registry
+                    .lookup("ReliableMulticastService");
 
             multicastService.registerClient(this);
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
@@ -78,14 +79,14 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     @Override
     public void receiveMessage(String message) throws RemoteException {
-        // System.out.println("[" + barrelName + "] Mensagem confiável recebida: " + message);
-        if(message.startsWith("flag/")){
+        // System.out.println("[" + barrelName + "] Mensagem confiável recebida: " +
+        // message);
+        if (message.startsWith("flag/")) {
             saveIndex(message);
-        }else{
+        } else {
             processReceivedData(message);
         }
     }
-
 
     private void processReceivedData(String mensagem) {
         String[] partes = mensagem.split(";", 2);
@@ -98,14 +99,14 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         }
     }
 
-    private void saveIndex(String mensagem){
+    private void saveIndex(String mensagem) {
         String[] partes = mensagem.split(" ");
-        if(partes.length == 3){
+        if (partes.length == 3) {
             String link = partes[1];
             String origem = partes[2];
-            if(linksCorr.containsKey(link)){
+            if (linksCorr.containsKey(link)) {
                 linksCorr.get(link).add(origem);
-            }else{
+            } else {
                 HashSet<String> links = new HashSet<>();
                 links.add(origem);
                 linksCorr.put(link, links);
@@ -114,44 +115,48 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     }
 
     @Override
-public List<String> search(String word, int page) throws RemoteException {
+    public List<String> search(String word, int page) throws RemoteException {
 
-    ArrayList<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>()));
+        ArrayList<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>()));
 
-    for (Map.Entry<String, HashSet<String>> entry : linksCorr.entrySet()) {
-        System.out.println("Link: " + entry.getKey() + " -> Origem: " + entry.getValue());
+        for (Map.Entry<String, HashSet<String>> entry : linksCorr.entrySet()) {
+            System.out.println("Link: " + entry.getKey() + " -> Origem: " + entry.getValue());
+        }
+
+        System.out.println("ANTES DO SORT----------------------------------------");
+        for (String s : results) {
+            System.out.println(s);
+        }
+
+        results.sort((a, b) -> {
+            // Extrair apenas o URL da string
+            String urlA = a.split("URL: ")[1].split(" ")[0]; // Assume que o URL está após "URL: " e termina antes do
+                                                             // primeiro espaço
+            String urlB = b.split("URL: ")[1].split(" ")[0]; // Mesma coisa para b
+
+            int countA = linksCorr.getOrDefault(urlA, new HashSet<>()).size();
+            int countB = linksCorr.getOrDefault(urlB, new HashSet<>()).size();
+            return Integer.compare(countB, countA); // Ordenar em ordem decrescente
+        });
+
+        System.out.println("DEPOIS DO SORT-----------------------------------------------");
+        for (String s : results) {
+            System.out.println(s);
+        }
+
+        int start = (page - 1) * 10;
+        int end = Math.min(start + 10, results.size());
+        if (start >= results.size()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(results.subList(start, end));
     }
 
-    System.out.println("ANTES DO SORT----------------------------------------");
-    for(String s: results){
-        System.out.println(s);
+    @Override
+    public List<String> related_links(String link) throws RemoteException {
+        ArrayList<String> results = new ArrayList<>(linksCorr.getOrDefault(link, new HashSet<>()));
+        return results;
     }
-    
-
-    results.sort((a, b) -> {
-        // Extrair apenas o URL da string
-        String urlA = a.split("URL: ")[1].split(" ")[0]; // Assume que o URL está após "URL: " e termina antes do primeiro espaço
-        String urlB = b.split("URL: ")[1].split(" ")[0]; // Mesma coisa para b
-    
-        int countA = linksCorr.getOrDefault(urlA, new HashSet<>()).size();
-        int countB = linksCorr.getOrDefault(urlB, new HashSet<>()).size();
-        return Integer.compare(countB, countA); // Ordenar em ordem decrescente
-    });
-    
-
-    System.out.println("DEPOIS DO SORT-----------------------------------------------");
-    for(String s: results){
-        System.out.println(s);
-    }
-    
-    int start = (page - 1) * 10;
-    int end = Math.min(start + 10, results.size());
-    if (start >= results.size()) {
-        return new ArrayList<>();
-    }
-    return new ArrayList<>(results.subList(start, end));
-}
-
 
     public static void main(String[] args) {
         try {

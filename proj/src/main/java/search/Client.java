@@ -135,7 +135,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         System.out.println("Introduza o link:");
                         String url1 = sc.nextLine();
                         if (isValidURL(url1)) {
-                            System.out.println("ddadada"); 
+                            client.links_quant(url1);
                         } else {
                             System.out.println("Erro: O que inseriste não é um URL válido!");
                         }
@@ -156,6 +156,24 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println("O programa não pôde ser iniciado pois a conexão ao Gateway falhou!");
         }
     }
+    public void links_quant(String link) throws RemoteException {
+        if (gateway != null) {
+            resultados = gateway.request_url_related(link);  
+            System.out.println("Link enviada para o barrel via Gateway: " + link);
+            
+            if (resultados != null && !resultados.isEmpty()) {
+                System.out.println("URLs que apontam para '" + link + "':");
+                for (String url : resultados) {
+                    System.out.println(" - " + url);
+                }
+            } else {
+                System.out.println("Nenhuma URL encontrada para o link: " + link);
+            }
+        } else {
+            System.out.println("Erro: Gateway não está conectado!");
+        }
+    }
+
 
     public void pesquisar(String word, int page) throws RemoteException {
         if (gateway != null) {

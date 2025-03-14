@@ -56,6 +56,51 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     }
 
     @Override
+    public List<String> request_url_related(String link) throws RemoteException {
+        Registry registry;
+        String[] barrels;
+
+        try {
+            registry = LocateRegistry.getRegistry(1100);
+        } catch (Exception e) {
+            throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
+        }
+
+        while (true) { 
+            try {
+                barrels = registry.list(); 
+
+                if (barrels.length == 0) {
+                    System.out.println("Nenhum Barrel disponível. Tentando novamente em 2 segundos...");
+                    Thread.sleep(2000);
+                }
+
+                List<String> listaBarrels = new ArrayList<>(Arrays.asList(barrels));
+
+                for (String selectedBarrel : listaBarrels) {
+                    try {
+                        System.out.println("A tentar conectar ao Barrel: " + selectedBarrel);
+                        IBarrelGateway barrel = (IBarrelGateway) registry.lookup(selectedBarrel);
+                        System.out.println("consegui");
+                        List<String> results = barrel.related_links(link);
+                        return results;
+                    } catch (Exception e) {
+                        System.out.println("Erro ao conectar ao Barrel " + selectedBarrel + ". Tentando outro...");
+                        e.printStackTrace();
+                    }
+                }
+
+                System.out.println("Todos os Barrels falharam. Tentando novamente em 2 segundos...");
+                Thread.sleep(2000);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RemoteException("Erro ao buscar palavra.", e);
+            }
+        }
+    }
+
+    @Override
     public List<String> request_index(String word, int page) throws RemoteException {
         Registry registry;
         String[] barrels;
