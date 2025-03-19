@@ -41,8 +41,8 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
 
     public static void main(String[] args) {
         try {
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099); // Substituir pelo IP/porta do GatewayService
             URLQueueImpl queue = new URLQueueImpl();
-            Registry registry = LocateRegistry.createRegistry(1098); // Porta específica para fila
             registry.rebind("URLQueue", queue);
             System.out.println("Fila de URLs pronta!");
         } catch (RemoteException e) {

@@ -53,13 +53,14 @@ public class Downloader {
             System.out.println("ReliableMulticastService registrado com sucesso.");
 
             try {
+                System.out.println("opa");
                 multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
             } catch (NotBoundException e) {
                 System.out.println("Reliable multicast nao encontrado");
                 e.printStackTrace();
             }
-
-            Registry urlregistry = LocateRegistry.getRegistry(1098);
+            System.out.println("opa11");
+            Registry urlregistry = LocateRegistry.getRegistry("localhost",1099);
             queue = (URLQueue) urlregistry.lookup("URLQueue");
 
             System.out.println("Downloaders iniciados.");
@@ -138,11 +139,10 @@ public class Downloader {
                     if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto) && !uniqueUrls.contains(linkAbsoluto)) {
                         queue.addURL(linkAbsoluto);
                         uniqueUrls.add(linkAbsoluto);
-                        System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                        saveRelation(url, linkAbsoluto);
+                        //System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
                     }
                 }
-                saveRelation(url, uniqueUrls);
-
                 processarPalavras(texto, url, titulo, citacao);
                 System.out.println("LINK PROCESSADO!!!!!");
             } else {
@@ -234,15 +234,14 @@ public class Downloader {
 
     }
 
-    private static void saveRelation(String urlOrigem, HashSet<String> linksInternos) {
-        for (String atual : linksInternos) {
+    private static void saveRelation(String urlOrigem, String atual) {
             String mens = "flag/" + " " + atual + " " + urlOrigem;
+            System.out.println(mens);
             try {
                 multicastService1.sendReliableMessage(mens);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
 
-        }
     }
 }

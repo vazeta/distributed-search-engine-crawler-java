@@ -46,7 +46,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     @Override
     public void addUrlToQueue(String url) throws RemoteException {
         try {
-            Registry registry = LocateRegistry.getRegistry(1098);
+            Registry registry = LocateRegistry.getRegistry(1099);
             URLQueue queue = (URLQueue) registry.lookup("URLQueue");
             queue.addURL(url);
             System.out.println("Gateway: URL " + url + " enviada para a fila");
