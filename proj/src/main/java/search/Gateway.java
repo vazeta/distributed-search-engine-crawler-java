@@ -106,7 +106,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         String[] barrels;
 
         try {
-            registry = LocateRegistry.getRegistry(1100);
+            registry = LocateRegistry.getRegistry(1099);
         } catch (Exception e) {
             throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
         }
@@ -121,6 +121,14 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 }
 
                 List<String> listaBarrels = new ArrayList<>(Arrays.asList(barrels));
+                List<String> filteredBarrels = new ArrayList<>();
+                for (String barrel : listaBarrels) {
+                    if (barrel.startsWith("Barrel")) {
+                        filteredBarrels.add(barrel);
+                    }
+                }
+                listaBarrels = filteredBarrels;
+
 
                 for (String selectedBarrel : listaBarrels) {
                     try {
@@ -131,7 +139,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                         return results;
                     } catch (Exception e) {
                         System.out.println("Erro ao conectar ao Barrel " + selectedBarrel + ". Tentando outro...");
-                        e.printStackTrace();
                     }
                 }
 

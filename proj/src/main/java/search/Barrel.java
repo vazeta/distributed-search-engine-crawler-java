@@ -25,20 +25,10 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     private void RegisterBarrel() {
         try {
-            Registry registry;
-
-            try {
-                registry = LocateRegistry.createRegistry(1100); // Usa o registry já existente
-                System.out.println("Novo RMI Registry criado na porta 1100.");
-            } catch (RemoteException e) {
-                System.out.println("RMI Registry já existente. Conectando...");
-                registry = LocateRegistry.getRegistry("127.0.0.1", 1100);
-            }
-
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099); // Substituir pelo IP/porta do GatewayService
             registry.rebind(barrelName, this);
             System.out.println(barrelName + " registrado no RMI.");
         } catch (RemoteException e) {
-            System.out.println("Erro ao registrar " + barrelName + " no RMI.");
             e.printStackTrace();
         }
     }
@@ -130,13 +120,13 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
         results.sort((a, b) -> {
             // Extrair apenas o URL da string
-            String urlA = a.split("URL: ")[1].split(" ")[0]; // Assume que o URL está após "URL: " e termina antes do
-                                                             // primeiro espaço
-            String urlB = b.split("URL: ")[1].split(" ")[0]; // Mesma coisa para b
+            String urlA = a.split("URL: ")[1].split(" ")[0]; 
+                                                             
+            String urlB = b.split("URL: ")[1].split(" ")[0]; 
 
             int countA = linksCorr.getOrDefault(urlA, new HashSet<>()).size();
             int countB = linksCorr.getOrDefault(urlB, new HashSet<>()).size();
-            return Integer.compare(countB, countA); // Ordenar em ordem decrescente
+            return Integer.compare(countB, countA);
         });
 
         System.out.println("DEPOIS DO SORT-----------------------------------------------");
