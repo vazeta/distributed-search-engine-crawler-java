@@ -157,7 +157,9 @@ public class Client extends UnicastRemoteObject implements IntClient {
                             StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
                             Statistics stats = statsService.getStats();
                             if (stats != null) {
-                                System.out.println("Estatísticas consultadas:");
+                                System.out.print(" \n ");
+                                System.out.println("----------------------------------------------");
+                                System.out.println("ESTATISTICAS!!:");
                                 System.out.println("Total de pesquisas: " + stats.getNumSearches());
                                 System.out.println("Barrels ativos: " + stats.getActiveBarrels());
                                 System.out.println("Tempo médio de resposta: " + stats.getAverageResponseTime() + " ms");
@@ -166,6 +168,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                                     System.out.println(" - " + term);
                                 }
                                 System.out.println("Tamanho dos indexs:"+ stats.getBarrelIndexSizes());
+                                System.out.println("------------------------------------------");
                             } else {
                                 System.out.println("Ainda não há estatísticas disponíveis.");
                             }
