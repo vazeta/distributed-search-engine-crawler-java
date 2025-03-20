@@ -99,7 +99,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     @Override
     public List<String> request_index(String word, int page) throws RemoteException {
-        // Atualiza o contador apenas se for a primeira página
+        
         if (page == 1) {
             String[] terms = word.split("\\s+");
             for (String term : terms) {
