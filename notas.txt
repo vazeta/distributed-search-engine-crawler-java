@@ -15,12 +15,4 @@ Como correr
 
 
 A FAZER:
--> Citacao nao esta funcionar para alguns sites : ex :https://en.wikipedia.org/wiki/Java_(programming_language)
--> Caching na pesquisa
--> stats com callback
--> pergutar sobre body content -> https://pt.wikipedia.org/wiki/Josep_Guardiola#bodyContent -> https://pt.wikipedia.org/wiki/Josep_Guardiola
--> paginacao nao esta totalmente bem
--> Temos servidores RMI a mais
--> acentos
--> perguntar sobre https e http
--> conjunto de palavras
+-> barrels e multicast tudo mal
