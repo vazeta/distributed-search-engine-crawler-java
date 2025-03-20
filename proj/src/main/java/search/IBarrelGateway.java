@@ -7,4 +7,5 @@ public interface IBarrelGateway  extends Remote{
     void storeDataInIndex(String palavra, String url) throws RemoteException;
     List<String> search(String word, int page) throws RemoteException;
     public List<String> related_links(String link) throws RemoteException;
+    int getIndexSize() throws RemoteException;
 }

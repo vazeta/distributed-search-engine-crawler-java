@@ -80,7 +80,8 @@ public class Client extends UnicastRemoteObject implements IntClient {
         System.out.println("1 - Indexar um novo URL");
         System.out.println("2 - Fazer uma pesquisa");
         System.out.println("3 - Saber as páginas que apontam para uma certa página");
-        System.out.println("4 -  Sair");
+        System.out.println("4 - Consultar estatísticas do sistema");
+        System.out.println("5 -  Sair");
         System.out.print("Escolha: ");
 
     }
@@ -88,6 +89,16 @@ public class Client extends UnicastRemoteObject implements IntClient {
         try {
             Client client = new Client();  // Só prossegue se a conexão for bem-sucedida
             Scanner sc = new Scanner(System.in);
+
+            try {
+                StatisticsClient statsClient = new StatisticsClientImpl();
+                Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+                StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
+                statsService.subscribeStatistics(statsClient);
+                System.out.println("Cliente inscrito para receber atualizações de estatísticas.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             while (true) {
                 menu();
@@ -140,9 +151,31 @@ public class Client extends UnicastRemoteObject implements IntClient {
                             System.out.println("Erro: O que inseriste não é um URL válido!");
                         }
                         break;
-
-
                     case 4:
+                        try {
+                            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+                            StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
+                            Statistics stats = statsService.getStats();
+                            if (stats != null) {
+                                System.out.println("Estatísticas consultadas:");
+                                System.out.println("Total de pesquisas: " + stats.getNumSearches());
+                                System.out.println("Barrels ativos: " + stats.getActiveBarrels());
+                                System.out.println("Tempo médio de resposta: " + stats.getAverageResponseTime() + " ms");
+                                System.out.println("Top 10 de pesquisas:");
+                                for (String term : stats.getTop10Searches()) {
+                                    System.out.println(" - " + term);
+                                }
+                                System.out.println("Tamanho dos indexs:"+ stats.getBarrelIndexSizes());
+                            } else {
+                                System.out.println("Ainda não há estatísticas disponíveis.");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        break;
+
+
+                    case 5:
                         System.out.println("A sair do Googol...");
                         sc.close();
                         return;

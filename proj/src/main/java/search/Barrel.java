@@ -52,6 +52,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     }
 
+    @Override
+    public int getIndexSize() throws RemoteException {
+        return index.size();
+    }
+
     private void registerWithReliableMulticastService() {
         try {
             Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
@@ -77,6 +82,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             processReceivedData(message);
         }
     }
+
 
     private void processReceivedData(String mensagem) {
         String[] partes = mensagem.split(";", 2);
@@ -107,7 +113,21 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     @Override
     public List<String> search(String word, int page) throws RemoteException {
 
-        ArrayList<String> results = new ArrayList<>(index.getOrDefault(word, new HashSet<>()));
+        String[] words = word.split(" "); 
+        Set<String> resultsSet = null;
+        for (String w : words) {
+            if (index.containsKey(w)) {
+                if (resultsSet == null) {
+                    resultsSet = new HashSet<>(index.get(w));
+                } else {
+                    resultsSet.retainAll(index.get(w));
+                }
+            } else {
+                return new ArrayList<>();
+            }
+        }
+
+        ArrayList<String> results = new ArrayList<>(resultsSet);
 
         for (Map.Entry<String, HashSet<String>> entry : linksCorr.entrySet()) {
             System.out.println("Link: " + entry.getKey() + " -> Origem: " + entry.getValue());
@@ -121,7 +141,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         results.sort((a, b) -> {
             // Extrair apenas o URL da string
             String urlA = a.split("URL: ")[1].split(" ")[0]; 
-                                                             
+
             String urlB = b.split("URL: ")[1].split(" ")[0]; 
 
             int countA = linksCorr.getOrDefault(urlA, new HashSet<>()).size();
