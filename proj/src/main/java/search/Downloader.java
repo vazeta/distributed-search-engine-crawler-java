@@ -109,41 +109,51 @@ public class Downloader {
             if (!urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 HashSet<String> uniqueUrls = new HashSet<>();
-                uniqueUrls.add(url);
+                
+                // Obtém a URL final após possíveis redirecionamentos
+                String finalUrl = Jsoup.connect(url).followRedirects(true).execute().url().toString();
+                uniqueUrls.add(finalUrl);
+                
                 // Faz o download da página
-                Document doc = Jsoup.connect(url).get();
+                Document doc = Jsoup.connect(finalUrl).get();
                 String texto = doc.text();
                 String titulo = doc.title();
                 String citacao = doc.select("meta[name=description]").attr("content");
-
+    
                 if (citacao == null || citacao.isEmpty()) {
                     Element primeiroParagrafo = doc.select("p").first();
                     if (primeiroParagrafo != null) {
                         citacao = primeiroParagrafo.text();
                     }
                 }
-
+    
                 // Captura todos os links na página
-
                 Elements links = doc.select("a[href]");
                 for (Element link : links) {
                     String linkAbsoluto = link.absUrl("href");
-
+                    
                     // Remover fragmento (#...) do link
                     int hashIndex = linkAbsoluto.indexOf("#");
                     if (hashIndex != -1) {
-                        System.out.println("link ignorado"+ "->"+ linkAbsoluto);
+                        System.out.println("link ignorado -> " + linkAbsoluto);
                         linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
                     }
-
+    
+                    // Obtém a URL final após possíveis redirecionamentos
+                    try {
+                        linkAbsoluto = Jsoup.connect(linkAbsoluto).followRedirects(true).execute().url().toString();
+                    } catch (Exception e) {
+                        System.out.println("Erro ao verificar redirecionamento: " + e.getMessage());
+                        continue;
+                    }
+                    
                     if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto) && !uniqueUrls.contains(linkAbsoluto)) {
                         queue.addURL(linkAbsoluto);
                         uniqueUrls.add(linkAbsoluto);
-                        saveRelation(url, linkAbsoluto);
-                        //System.out.println(Thread.currentThread().getName() + " encontrou nova URL: " + linkAbsoluto);
+                        saveRelation(finalUrl, linkAbsoluto);
                     }
                 }
-                processarPalavras(texto, url, titulo, citacao);
+                processarPalavras(texto, finalUrl, titulo, citacao);
                 System.out.println("LINK PROCESSADO!!!!!");
             } else {
                 System.out.println("URL: " + url + " já foi processado.");
