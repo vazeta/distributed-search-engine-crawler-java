@@ -133,7 +133,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                                 String resposta = sc.nextLine().trim().toLowerCase();
                                 if (resposta.equals("s")) {
                                     page++;
-                                } else {
+                                } else if(resposta.equals("n")){
                                     continuar = false;
                                 }
                             }else{
