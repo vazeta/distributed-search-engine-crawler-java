@@ -29,11 +29,9 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
             } catch (NotBoundException e) { // este tipo de erro so é aplicado por causa do lookup pois nao é um problema de rede logo nao é tratado pelo outro
                 System.out.println("Erro: O serviço 'GatewayService' não está registrado no RMI Registry.");
-                e.printStackTrace();
 
             } catch (RemoteException e) {
                 System.out.println("Erro: Problema na comunicação remota com o RMI Registry.");
-                e.printStackTrace();
             }
 
             tentativas++;
@@ -42,7 +40,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    System.out.println("erro");
                 }
             }
         }
@@ -190,6 +188,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             }
         } catch (RemoteException e) {
             System.out.println("O programa não pôde ser iniciado pois a conexão ao Gateway falhou!");
+            return;
         }
     }
     public void links_quant(String link) throws RemoteException {

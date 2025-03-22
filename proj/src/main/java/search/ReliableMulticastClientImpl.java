@@ -14,4 +14,11 @@ class ReliableMulticastClientImpl extends UnicastRemoteObject implements Reliabl
     public void receiveMessage(String message) throws RemoteException {
         System.out.println("Mensagem recebida via ReliableMulticast: " + message);
     }
+
+    @Override
+    public void ping() throws RemoteException {
+        // Apenas um método vazio para testar a conectividade
+    }
+
+    
 }

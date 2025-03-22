@@ -65,7 +65,7 @@ public class Downloader {
 
             System.out.println("Downloaders iniciados.");
 
-            int numDownloaders = 2;
+            int numDownloaders = 4;
             for (int i = 0; i < numDownloaders; i++) {
                 new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
             }
@@ -127,7 +127,6 @@ public class Downloader {
                     }
                 }
     
-                // Captura todos os links na página
                 Elements links = doc.select("a[href]");
                 for (Element link : links) {
                     String linkAbsoluto = link.absUrl("href");

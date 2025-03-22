@@ -12,12 +12,13 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     private HashMap<String, HashSet<String>> index;
     private HashMap<String, HashSet<String>> linksCorr = new HashMap<>();
     private String barrelName;
-    private static final String PAGES_FILE = "paginas.obj";
+    //private static final String PAGES_FILE = "paginas.obj";
 
     public Barrel(String name) throws RemoteException {
         super();
         this.barrelName = name;
-        this.index = StorageUtil.loadData(PAGES_FILE, new HashMap<>());
+        String fileName = "paginas_"+barrelName+".obj";
+        this.index = StorageUtil.loadData(fileName, new HashMap<>());
         System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
         RegisterBarrel();
         registerWithReliableMulticastService();
@@ -48,7 +49,8 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         // infoAssociada);
 
         // Salvar índice atualizado
-        StorageUtil.saveData(index, PAGES_FILE);
+        String fileName = "paginas_"+barrelName +".obj";
+        StorageUtil.saveData(index, fileName);
 
     }
 
@@ -63,7 +65,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             ReliableMulticastService multicastService = (ReliableMulticastService) registry
                     .lookup("ReliableMulticastService");
 
-            multicastService.registerClient(this);
+            multicastService.registerClient(this,this.barrelName);
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
 
         } catch (RemoteException | NotBoundException e) {
@@ -81,6 +83,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         } else {
             processReceivedData(message);
         }
+    }
+
+    @Override
+    public void ping() throws RemoteException{
+
     }
 
 
@@ -169,10 +176,12 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     }
 
     public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Uso: java search.Barrel <nomeDoBarrel>");
+            return;
+        }
         try {
-            new Barrel("Barrel1");
-            new Barrel("Barrel2");
-
+            new Barrel(args[0]);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

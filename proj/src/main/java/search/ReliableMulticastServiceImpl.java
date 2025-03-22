@@ -1,42 +1,65 @@
 package search;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 class ReliableMulticastServiceImpl extends UnicastRemoteObject implements ReliableMulticastService {
-    private Set<ReliableMulticastClient> clients;
+    private Map<String, ReliableMulticastClient> clients;
 
     protected ReliableMulticastServiceImpl() throws RemoteException {
         super();
-        this.clients = new HashSet<>();
+        this.clients = new HashMap<>();
     }
 
     @Override
     public synchronized void sendReliableMessage(String message) throws RemoteException {
-        //System.out.println("Enviando mensagem confiável: " + message);
-        for (ReliableMulticastClient client : clients) {
+        int attempt = 0;
+        boolean allAvailable = false;
+        
+        while (!allAvailable) {
+            attempt++;
+            System.out.println("Tentativa " + attempt + " de verificar a disponibilidade dos clientes.");
+            
+            boolean hasUnavailableClients = false;
+            
+            for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
+                String clientName = entry.getKey();
+                ReliableMulticastClient client = entry.getValue();
+                try {
+                    client.ping(); // Método fictício para testar conectividade
+                } catch (RemoteException e) {
+                    hasUnavailableClients = true;
+                    System.out.println("Cliente " + clientName + " inacessível, tentando novamente.");
+                }
+            }
+            
+            if (!hasUnavailableClients) {
+                allAvailable = true;
+            } else {
+                try {
+                    Thread.sleep(1000); // Espera antes de tentar novamente
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RemoteException("Thread interrompida durante o timeout", e);
+                }
+            }
+        }
+        
+        // Agora que todos estão disponíveis, enviamos a mensagem
+        for (ReliableMulticastClient client : clients.values()) {
             try {
                 client.receiveMessage(message);
             } catch (RemoteException e) {
-                System.out.println("Erro ao enviar mensagem para um cliente.");
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                e.printStackTrace(pw);
-                String stackTrace = sw.toString();
-
-                // Agora você pode imprimir a pilha de erro ou manipulá-la como desejar
-                System.out.println(stackTrace);
+                throw new RemoteException("Falha ao enviar a mensagem após todos os clientes estarem disponíveis", e);
             }
         }
     }
 
     @Override
-    public synchronized void registerClient(ReliableMulticastClient client) throws RemoteException {
-        clients.add(client);
-        System.out.println("Cliente registrado para ReliableMulticastService.");
+    public synchronized void registerClient(ReliableMulticastClient client, String name) throws RemoteException {
+        clients.put(name, client);
+        System.out.println("Cliente " + name + " registrado para ReliableMulticastService.");
     }
 }

@@ -189,7 +189,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                         int size = barrel.getIndexSize();
                         barrelIndexSizes.put(name, size);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        System.out.println("Erro ao conectar ao Barrel " + name + ". Tentando outro...");
                     }
                 }
             }

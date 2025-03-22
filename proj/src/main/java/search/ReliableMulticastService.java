@@ -6,5 +6,5 @@ import java.rmi.RemoteException;
 
 public interface ReliableMulticastService extends Remote {
     void sendReliableMessage(String message) throws RemoteException;
-    void registerClient(ReliableMulticastClient client) throws RemoteException;
+    void registerClient(ReliableMulticastClient client, String name) throws RemoteException;
 }
