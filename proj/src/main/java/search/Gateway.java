@@ -14,6 +14,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     // Contador para os termos pesquisados
     private Map<String, Integer> searchCounts = new HashMap<>();
+    private ReliableMulticastService multicastService;
     
     // Campos para o cálculo do tempo médio (cumulativo)
     private long totalResponseTime = 0;
@@ -21,26 +22,40 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     public Gateway() throws RemoteException {
         super();
+        multicastService = new ReliableMulticastServiceImpl();
         gatewayReg(); 
     }
 
     private void gatewayReg() {
         try {
             Registry registry;
+            Registry registry1;
+    
             try {
                 registry = LocateRegistry.createRegistry(1099);
                 System.out.println("Novo RMI Registry criado na porta 1099.");
             } catch (RemoteException e) {
-                System.out.println("RMI Registry já existente. Conectando...");
+                System.out.println("RMI Registry já existente na porta 1099. Conectando...");
                 registry = LocateRegistry.getRegistry(1099);
             }
+    
+            try {
+                registry1 = LocateRegistry.createRegistry(1097);
+                System.out.println("Novo RMI Registry criado na porta 1097.");
+            } catch (RemoteException e) {
+                System.out.println("RMI Registry já existente na porta 1097. Conectando...");
+                registry1 = LocateRegistry.getRegistry(1097);
+            }
+    
             registry.rebind("GatewayService", this);
+            registry1.rebind("ReliableMulticast", multicastService);
             System.out.println("Gateway RMI registrado com sucesso.");
         } catch (RemoteException e) {
             System.out.println("Erro ao registrar o Gateway no RMI!");
             e.printStackTrace();
         }
     }
+    
 
     @Override
     public void connectClient(IntClient client) throws RemoteException {

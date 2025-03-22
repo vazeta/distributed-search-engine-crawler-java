@@ -38,29 +38,29 @@ public class Downloader {
         size_inicial = urlListFile.size();
         carregarStopWords("lib/stopwords.txt");
         try {
-            ReliableMulticastService multicastService = new ReliableMulticastServiceImpl();
+
             Registry registry;
-
             try {
-                // Tenta obter um registro existente
-                registry = LocateRegistry.getRegistry(1097);
-                registry.list(); // Testa se o registro já está disponível
+
+                registry = LocateRegistry.getRegistry("localhost", 1097);
+                System.out.println("Conectando ao registro existente na porta 1097...");
+                registry.list();
             } catch (Exception e) {
-                // Se não existir, cria um novo
-                registry = LocateRegistry.createRegistry(1097);
+
+                System.out.println("Falha ao conectar ao RMI Registry na porta 1097.");
+                e.printStackTrace();
+                return;
             }
-            registry.rebind("ReliableMulticastService", multicastService);
-            System.out.println("ReliableMulticastService registrado com sucesso.");
 
             try {
-                System.out.println("opa");
-                multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticastService");
+                multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticast");
+                System.out.println("ReliableMulticastService encontrado com sucesso.");
             } catch (NotBoundException e) {
-                System.out.println("Reliable multicast nao encontrado");
+                System.out.println("ReliableMulticastService não encontrado no RMI Registry na porta 1097.");
                 e.printStackTrace();
+                return;
             }
-            System.out.println("opa11");
-            Registry urlregistry = LocateRegistry.getRegistry("localhost",1099);
+            Registry urlregistry = LocateRegistry.getRegistry("localhost", 1099);
             queue = (URLQueue) urlregistry.lookup("URLQueue");
 
             System.out.println("Downloaders iniciados.");
@@ -109,44 +109,41 @@ public class Downloader {
             if (!urlListFile.contains(url)) {
                 System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                 HashSet<String> uniqueUrls = new HashSet<>();
-                
-                // Obtém a URL final após possíveis redirecionamentos
+
                 String finalUrl = Jsoup.connect(url).followRedirects(true).execute().url().toString();
                 uniqueUrls.add(finalUrl);
-                
-                // Faz o download da página
+
                 Document doc = Jsoup.connect(finalUrl).get();
                 String texto = doc.text();
                 String titulo = doc.title();
                 String citacao = doc.select("meta[name=description]").attr("content");
-    
+
                 if (citacao == null || citacao.isEmpty()) {
                     Element primeiroParagrafo = doc.select("p").first();
                     if (primeiroParagrafo != null) {
                         citacao = primeiroParagrafo.text();
                     }
                 }
-    
+
                 Elements links = doc.select("a[href]");
                 for (Element link : links) {
                     String linkAbsoluto = link.absUrl("href");
-                    
-                    // Remover fragmento (#...) do link
+
                     int hashIndex = linkAbsoluto.indexOf("#");
                     if (hashIndex != -1) {
                         System.out.println("link ignorado -> " + linkAbsoluto);
                         linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
                     }
-    
-                    // Obtém a URL final após possíveis redirecionamentos
+
                     try {
                         linkAbsoluto = Jsoup.connect(linkAbsoluto).followRedirects(true).execute().url().toString();
                     } catch (Exception e) {
                         System.out.println("Erro ao verificar redirecionamento: " + e.getMessage());
                         continue;
                     }
-                    
-                    if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto) && !uniqueUrls.contains(linkAbsoluto)) {
+
+                    if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)
+                            && !uniqueUrls.contains(linkAbsoluto)) {
                         queue.addURL(linkAbsoluto);
                         uniqueUrls.add(linkAbsoluto);
                         saveRelation(finalUrl, linkAbsoluto);
@@ -159,11 +156,11 @@ public class Downloader {
             }
 
         } catch (UnsupportedMimeTypeException e) {
-            // Ignora PDFs e outros tipos não suportados
+
             System.out.println("Ignorando URL não suportada (" + e.getMimeType() + "): " + url);
 
         } catch (HttpStatusException e) {
-            // Trata erro 404 ou outros erros HTTP
+
             if (e.getStatusCode() == 404) {
                 System.out.println("Erro 404: Página não encontrada - " + url);
             } else {
@@ -244,13 +241,13 @@ public class Downloader {
     }
 
     private static void saveRelation(String urlOrigem, String atual) {
-            String mens = "flag/" + " " + atual + " " + urlOrigem;
-            System.out.println(mens);
-            try {
-                multicastService1.sendReliableMessage(mens);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+        String mens = "flag/" + " " + atual + " " + urlOrigem;
+        System.out.println(mens);
+        try {
+            multicastService1.sendReliableMessage(mens);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
 
     }
 }
