@@ -14,7 +14,7 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
     }
 
     @Override
-    public synchronized void sendReliableMessage(String message) throws RemoteException {
+    public void sendReliableMessage(String message) throws RemoteException {
         int attempt = 0;
         boolean allAvailable = false;
         
@@ -23,7 +23,15 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
             System.out.println("Tentativa " + attempt + " de verificar a disponibilidade dos clientes.");
             
             boolean hasUnavailableClients = false;
-            
+            System.out.println("----------------------------------------");
+            System.out.println("----------------------------------------");
+            for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
+                String clientName = entry.getKey();
+                ReliableMulticastClient client = entry.getValue();
+                System.out.println(clientName + "-" + client);
+            }
+            System.out.println("----------------------------------------");
+            System.out.println("----------------------------------------");
             for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
                 String clientName = entry.getKey();
                 ReliableMulticastClient client = entry.getValue();
@@ -59,6 +67,9 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
 
     @Override
     public synchronized void registerClient(ReliableMulticastClient client, String name) throws RemoteException {
+        if(clients.containsKey(name)){
+            System.out.println("JA EXISTE");
+        }
         clients.put(name, client);
         System.out.println("Cliente " + name + " registrado para ReliableMulticastService.");
     }
