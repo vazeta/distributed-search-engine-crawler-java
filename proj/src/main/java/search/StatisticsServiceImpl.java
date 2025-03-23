@@ -48,7 +48,6 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
                 Map<String, Integer> barrelIndexSizes = new HashMap<>();
                 for (String name : allNames) {
                     if (name.startsWith("Barrel")) {
-                        activeBarrels++;
                         try {
                             IBarrelGateway barrel = (IBarrelGateway) registry.lookup(name);
                             int size = barrel.getIndexSize();
@@ -59,7 +58,7 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
                     }
                 }
                 
-                Statistics stats = new Statistics(0, activeBarrels, 0);
+                Statistics stats = new Statistics(0, barrelIndexSizes.size(), 0);
                 stats.setTop10Searches(new ArrayList<>());
                 stats.setBarrelIndexSizes(barrelIndexSizes);
                 return stats;
