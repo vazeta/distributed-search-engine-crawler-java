@@ -19,17 +19,20 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         this.barrelName = name;
         String fileName = "paginas_"+barrelName+".obj";
         this.index = StorageUtil.loadData(fileName, new HashMap<>());
-        System.out.println(barrelName + " carregou " + index.size() + " palavras do aquivo");
-        RegisterBarrel();
+        System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
+        registerWithGateway();
         registerWithReliableMulticastService();
     }
 
-    private void RegisterBarrel() {
+    private void registerWithGateway() {
         try {
-            Registry registry = LocateRegistry.getRegistry("localhost", 1099); // Substituir pelo IP/porta do GatewayService
-            registry.rebind(barrelName, this);
-            System.out.println(barrelName + " registrado no RMI.");
-        } catch (RemoteException e) {
+            // Altere para o IP do PC Windows onde o Gateway está rodando, por exemplo, "192.168.71.1"
+            Registry registry = LocateRegistry.getRegistry(1099);
+            IClientGateway gateway = (IClientGateway) registry.lookup("GatewayService");
+            gateway.registerBarrel(this.barrelName, this);
+            System.out.println("Barrel registrado via Gateway.");
+        } catch (Exception e) {
+            System.err.println("Erro ao registrar o Barrel via Gateway:");
             e.printStackTrace();
         }
     }
@@ -61,7 +64,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     private void registerWithReliableMulticastService() {
         try {
-            Registry registry = LocateRegistry.getRegistry("127.0.0.1", 1097);
+            Registry registry = LocateRegistry.getRegistry(1097);
             ReliableMulticastService multicastService = (ReliableMulticastService) registry
                     .lookup("ReliableMulticast");
 
@@ -176,6 +179,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     }
 
     public static void main(String[] args) {
+        
         if (args.length < 1) {
             System.out.println("Uso: java search.Barrel <nomeDoBarrel>");
             return;

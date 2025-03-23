@@ -74,6 +74,18 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         }
     }
 
+    public void registerBarrel(String barrelName, IBarrelGateway barrelStub) throws RemoteException {
+        try {
+            Registry registry = LocateRegistry.getRegistry(); 
+            registry.rebind(barrelName, barrelStub);
+            System.out.println("Barrel " + barrelName + " registrado via Gateway.");
+        } catch (RemoteException e) {
+            System.err.println("Erro ao registrar o Barrel " + barrelName);
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     @Override
     public List<String> request_url_related(String link) throws RemoteException {
         Registry registry;

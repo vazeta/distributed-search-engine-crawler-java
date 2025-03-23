@@ -9,4 +9,5 @@ public interface IClientGateway extends Remote {
     void addUrlToQueue(String url) throws RemoteException; 
     List<String> request_index(String word, int page) throws RemoteException;
     List<String> request_url_related(String link) throws RemoteException;
+    void registerBarrel(String barrelName, IBarrelGateway barrelStub) throws RemoteException;
 }
