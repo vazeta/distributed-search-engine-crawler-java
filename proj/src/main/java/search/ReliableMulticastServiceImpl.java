@@ -20,18 +20,7 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
         
         while (!allAvailable) {
             attempt++;
-            System.out.println("Tentativa " + attempt + " de verificar a disponibilidade dos clientes.");
-            
             boolean hasUnavailableClients = false;
-            System.out.println("----------------------------------------");
-            System.out.println("----------------------------------------");
-            for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
-                String clientName = entry.getKey();
-                ReliableMulticastClient client = entry.getValue();
-                System.out.println(clientName + "-" + client);
-            }
-            System.out.println("----------------------------------------");
-            System.out.println("----------------------------------------");
             for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
                 String clientName = entry.getKey();
                 ReliableMulticastClient client = entry.getValue();
@@ -60,7 +49,7 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
             try {
                 client.receiveMessage(message);
             } catch (RemoteException e) {
-                throw new RemoteException("Falha ao enviar a mensagem após todos os clientes estarem disponíveis", e);
+                System.out.println("Um dos barrels foi parado!!!!");
             }
         }
     }

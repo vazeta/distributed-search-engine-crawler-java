@@ -19,7 +19,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         this.barrelName = name;
         String fileName = "paginas_"+barrelName+".obj";
         this.index = StorageUtil.loadData(fileName, new HashMap<>());
-        System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
+        System.out.println(barrelName + " carregou " + index.size() + " palavras do aquivo");
         RegisterBarrel();
         registerWithReliableMulticastService();
     }

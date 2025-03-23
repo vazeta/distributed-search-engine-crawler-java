@@ -66,7 +66,7 @@ public class Downloader {
     
                 System.out.println("Downloaders iniciados.");
     
-                int numDownloaders = 4;
+                int numDownloaders = 5;
                 for (int i = 0; i < numDownloaders; i++) {
                     new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
                 }
@@ -133,14 +133,12 @@ public class Downloader {
 
                     int hashIndex = linkAbsoluto.indexOf("#");
                     if (hashIndex != -1) {
-                        System.out.println("link ignorado -> " + linkAbsoluto);
                         linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
                     }
 
                     try {
                         linkAbsoluto = Jsoup.connect(linkAbsoluto).followRedirects(true).execute().url().toString();
                     } catch (Exception e) {
-                        System.out.println("Erro ao verificar redirecionamento: " + e.getMessage());
                         continue;
                     }
 
@@ -185,10 +183,10 @@ public class Downloader {
             if (palavra.matches("[a-záéíóúãõâêîôûç]+") && !isStopWord(palavra)) {
                 String mensagem = palavra + ";URL: " + url + " Titulo: " + titulo + " Citacao: " + citacao;
                 try {
+                    System.out.println(Thread.currentThread().getName() + " enviando: " + mensagem);
                     multicastService1.sendReliableMessage(mensagem);
                 } catch (RemoteException e) {
-                    System.out.println("Erro ao enviar mensagem via ReliableMulticastService");
-                    e.printStackTrace();
+                    System.out.println("Erro ao enviar mensagem via ReliableMulticastService!");
                 }
 
             }
@@ -244,7 +242,7 @@ public class Downloader {
 
     private static void saveRelation(String urlOrigem, String atual) {
         String mens = "flag/" + " " + atual + " " + urlOrigem;
-        System.out.println(mens);
+        System.out.println(Thread.currentThread().getName() + " enviando: " + mens);
         try {
             multicastService1.sendReliableMessage(mens);
         } catch (RemoteException e) {
