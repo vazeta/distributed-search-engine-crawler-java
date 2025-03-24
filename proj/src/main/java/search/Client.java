@@ -212,13 +212,26 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
     public void pesquisar(String word, int page) throws RemoteException {
         if (gateway != null) {
-            resultados = gateway.request_index(word, page);  
-            System.out.println("Palavra enviada para o barrel via Gateway: " + word);
+            List<String> tempResultados = gateway.request_index(word, page);
+            boolean hasMore = tempResultados.remove("__HAS_MORE__");
             
-            if (resultados != null && !resultados.isEmpty()) {
+            resultados = tempResultados;
+
+            System.out.println("Palavra enviada para o barrel via Gateway: " + word);
+    
+            if (!resultados.isEmpty()) {
                 System.out.println("URLs encontradas para '" + word + "':");
                 for (String url : resultados) {
                     System.out.println(" - " + url);
+                }
+    
+                if (hasMore) {
+                    System.out.print("Deseja ver a próxima página? (s/n): ");
+                    Scanner sc = new Scanner(System.in);
+                    String resposta = sc.nextLine().trim().toLowerCase();
+                    if (resposta.equals("s")) {
+                        pesquisar(word, page + 1);
+                    }
                 }
             } else {
                 System.out.println("Nenhuma URL encontrada para a palavra: " + word);
@@ -227,5 +240,6 @@ public class Client extends UnicastRemoteObject implements IntClient {
             System.out.println("Erro: Gateway não está conectado!");
         }
     }
+    
 
 }
