@@ -1,16 +1,17 @@
 package search;
+
 import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.registry.*;
 import java.util.*;
-import java.net.MalformedURLException; //tudo o que é java .net é para a validaçao dos urls
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-
-public class Client extends UnicastRemoteObject implements IntClient { 
+public class Client extends UnicastRemoteObject implements IntClient {
     private IClientGateway gateway;
     private static List<String> resultados = new ArrayList<>();
+
     public Client() throws RemoteException {
         super();
         if (!gatewayconnect()) {
@@ -27,7 +28,8 @@ public class Client extends UnicastRemoteObject implements IntClient {
                 System.out.println("Conectado ao Gateway!");
                 return true; // Conexão bem-sucedida
 
-            } catch (NotBoundException e) { // este tipo de erro so é aplicado por causa do lookup pois nao é um problema de rede logo nao é tratado pelo outro
+            } catch (NotBoundException e) { // este tipo de erro so é aplicado por causa do lookup pois nao é um
+                                            // problema de rede logo nao é tratado pelo outro
                 System.out.println("Erro: O serviço 'GatewayService' não está registrado no RMI Registry.");
 
             } catch (RemoteException e) {
@@ -47,32 +49,33 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
         return false; // Se todas as tentativas falharem
     }
+
     public void enviarURL(String url) throws RemoteException {
         if (gateway != null) {
-            gateway.addUrlToQueue(url);  
+            gateway.addUrlToQueue(url);
             System.out.println(" URL enviada para a queue via Gateway: " + url);
         } else {
             System.out.println(" Erro: Gateway não está conectado!");
         }
     }
+
     public static boolean isValidURL(String url) {
         try {
             URI uri = new URI(url);
-            
+
             // Verifica se tem um esquema válido (http ou https)
             if (uri.getScheme() == null || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
                 return false;
             }
-            
+
             uri.toURL(); // Isso confirma que a URL pode ser convertida
             return true;
         } catch (URISyntaxException | MalformedURLException e) {
             return false;
         }
     }
-    
 
-    private static void menu(){
+    private static void menu() {
         System.out.println("\n ----Bem vindo ao GOOGOL!!!-----");
         System.out.println("Selecione uma das seguintes opções:");
         System.out.println("1 - Indexar um novo URL");
@@ -83,9 +86,10 @@ public class Client extends UnicastRemoteObject implements IntClient {
         System.out.print("Escolha: ");
 
     }
+
     public static void main(String args[]) {
         try {
-            Client client = new Client();  // Só prossegue se a conexão for bem-sucedida
+            Client client = new Client(); // Só prossegue se a conexão for bem-sucedida
             Scanner sc = new Scanner(System.in);
 
             try {
@@ -113,7 +117,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         System.out.print(" Digite a URL para indexação: ");
                         String url = sc.nextLine();
                         if (isValidURL(url)) {
-                            client.enviarURL(url);  
+                            client.enviarURL(url);
                         } else {
                             System.out.println("Erro: O que inseriste não é um URL válido!");
                         }
@@ -124,18 +128,48 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         String word = sc.nextLine();
                         int page = 1;
                         boolean continuar = true;
+                        int totalPages = 0;
+
                         while (continuar) {
                             client.pesquisar(word, page);
-                            if(resultados.size() == 10){
-                                System.out.print("Deseja ver a próxima página? (s/n): ");
+
+                            if (resultados.isEmpty()) {
+                                System.out.println("Nenhum URL encontrado.");
+                                break;
+                            }
+
+                            if (resultados.get(resultados.size() - 1).startsWith("tem ")) {
+                                totalPages = Integer.parseInt(resultados.get(resultados.size() - 1).split(" ")[1]);
+                                resultados.remove(resultados.size() - 1);                             
+                            }
+
+                            for (String resultado : resultados) {
+                                System.out.println(resultado);
+                            }
+
+                            if (page < totalPages) {
+                                System.out.println("Deseja ver outra página? (s/n ou número da página)?");
+                                System.out.println("Página " + page + " de " + totalPages);
                                 String resposta = sc.nextLine().trim().toLowerCase();
+
                                 if (resposta.equals("s")) {
                                     page++;
-                                } else if(resposta.equals("n")){
+                                } else if (resposta.equals("n")) {
                                     continuar = false;
+                                } else {
+                                    try {
+                                        int novaPagina = Integer.parseInt(resposta);
+                                        if (novaPagina > 0 && novaPagina <= totalPages) {
+                                            page = novaPagina;
+                                        } else {
+                                            System.out.println("Número de página inválido.");
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("Entrada inválida.");
+                                    }
                                 }
-                            }else{
-                                continuar= false;
+                            } else {
+                                continuar = false;
                             }
                         }
                         break;
@@ -160,12 +194,13 @@ public class Client extends UnicastRemoteObject implements IntClient {
                                 System.out.println("ESTATISTICAS!!:");
                                 System.out.println("Total de pesquisas: " + stats.getNumSearches());
                                 System.out.println("Barrels ativos: " + stats.getActiveBarrels());
-                                System.out.println("Tempo médio de resposta: " + stats.getAverageResponseTime() + " ms");
+                                System.out
+                                        .println("Tempo médio de resposta: " + stats.getAverageResponseTime() + " ms");
                                 System.out.println("Top 10 de pesquisas:");
                                 for (String term : stats.getTop10Searches()) {
                                     System.out.println(" - " + term);
                                 }
-                                System.out.println("Tamanho dos indexs:"+ stats.getBarrelIndexSizes());
+                                System.out.println("Tamanho dos indexs:" + stats.getBarrelIndexSizes());
                                 System.out.println("------------------------------------------");
                             } else {
                                 System.out.println("Ainda não há estatísticas disponíveis.");
@@ -175,12 +210,10 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         }
                         break;
 
-
                     case 5:
                         System.out.println("A sair do Googol...");
                         sc.close();
                         return;
-                   
 
                     default:
                         System.out.println("Opção inválida! Tente novamente.");
@@ -191,11 +224,12 @@ public class Client extends UnicastRemoteObject implements IntClient {
             return;
         }
     }
+
     public void links_quant(String link) throws RemoteException {
         if (gateway != null) {
-            resultados = gateway.request_url_related(link);  
+            resultados = gateway.request_url_related(link);
             System.out.println("Link enviada para o barrel via Gateway: " + link);
-            
+
             if (resultados != null && !resultados.isEmpty()) {
                 System.out.println("URLs que apontam para '" + link + "':");
                 for (String url : resultados) {
@@ -209,37 +243,15 @@ public class Client extends UnicastRemoteObject implements IntClient {
         }
     }
 
-
     public void pesquisar(String word, int page) throws RemoteException {
         if (gateway != null) {
             List<String> tempResultados = gateway.request_index(word, page);
-            boolean hasMore = tempResultados.remove("__HAS_MORE__");
-            
+
             resultados = tempResultados;
 
-            System.out.println("Palavra enviada para o barrel via Gateway: " + word);
-    
-            if (!resultados.isEmpty()) {
-                System.out.println("URLs encontradas para '" + word + "':");
-                for (String url : resultados) {
-                    System.out.println(" - " + url);
-                }
-    
-                if (hasMore) {
-                    System.out.print("Deseja ver a próxima página? (s/n): ");
-                    Scanner sc = new Scanner(System.in);
-                    String resposta = sc.nextLine().trim().toLowerCase();
-                    if (resposta.equals("s")) {
-                        pesquisar(word, page + 1);
-                    }
-                }
-            } else {
-                System.out.println("Nenhuma URL encontrada para a palavra: " + word);
-            }
         } else {
             System.out.println("Erro: Gateway não está conectado!");
         }
     }
-    
 
 }

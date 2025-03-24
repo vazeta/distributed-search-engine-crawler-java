@@ -149,6 +149,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             return Integer.compare(countB, countA);
         });
 
+        int totalPages = (int) Math.ceil(results.size() / 10.0);
         int start = (page - 1) * 10;
         int end = Math.min(start + 10, results.size());
 
@@ -158,9 +159,8 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
         
         List<String> pagedResults = new ArrayList<>(results.subList(start, end));
-        if (end < results.size()) {
-            pagedResults.add("__HAS_MORE__"); 
-        }
+        
+        pagedResults.add("tem " + (totalPages) + " paginas");
 
         return pagedResults;
     }

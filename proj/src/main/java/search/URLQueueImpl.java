@@ -5,9 +5,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
     private static final long serialVersionUID = 1L;
@@ -16,7 +16,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
 
     protected URLQueueImpl() throws RemoteException {
         super();
-        urlQueue = new LinkedList<>();
+        urlQueue = new ConcurrentLinkedQueue<>(); 
         processedUrls = new HashSet<>();
     }
 
@@ -37,25 +37,25 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
         while (urlQueue.isEmpty()) {
             try {
                 System.out.println("Downloader esperando por URLs...");
-                wait();
+                wait(); // Timeout para evitar bloqueios infinitos
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
             }
         }
-        String url = urlQueue.poll();
-        System.out.println("Enviando URL para downloader: " + url);
-        return url;
+        return urlQueue.poll();
     }
 
     public static void main(String[] args) {
         try {
-            Registry registry = null;
+            Registry registry;
             try {
                 registry = LocateRegistry.getRegistry(1099);
                 registry.list();
             } catch (RemoteException e) {
-                System.out.println("RMI Registry não encontrado.");
+                System.out.println("RMI Registry não encontrado. Criando um novo...");
+                registry = LocateRegistry.createRegistry(1099);
+                System.out.println("RMI Registry criado na porta 1099.");
             }
 
             URLQueueImpl queue = new URLQueueImpl();
