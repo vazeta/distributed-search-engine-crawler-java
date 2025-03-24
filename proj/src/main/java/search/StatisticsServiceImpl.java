@@ -44,7 +44,6 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
             try {
                 Registry registry = LocateRegistry.getRegistry(1099);
                 String[] allNames = registry.list();
-                int activeBarrels = 0;
                 Map<String, Integer> barrelIndexSizes = new HashMap<>();
                 for (String name : allNames) {
                     if (name.startsWith("Barrel")) {
