@@ -121,27 +121,17 @@ O algoritmo implementado no `ReliableMulticastServiceImpl` possui as seguintes c
 
 * Método `sendReliableMessage()` usa uma estratégia de envio com validação de disponibilidade
 
-3. Verificação de Disponibilidade
-
-* Método `todosClientesDisponiveis()` testa a conexão com cada cliente através do método `ping()`
-* Se algum cliente não estiver disponível, o envio é interrompido
-
-4. Tratamento de Mensagens Pendentes
-
-* Fila `mensagensPendentes` armazena mensagens que não puderam ser enviadas(enquanto existem barrels indisponíveis)
-* Iniciamos uma Thread de monitoramento (`iniciarMonitoramento()`) tenta reenviar mensagens pendentes a cada 5 segundos
-
-5.  Recuperaçao dos dados nos barrels
+5. Recuperaçao dos dados nos barrels
 
 * Os Barrels quando são desligados guardas as suas estruturas `index` e `linkCorr` em ficheiros .obj
-* Deste modo quando estes barrels são ligados, recuperam rapidamente essa informação através da leituar desses ficheiros 
+* Deste modo quando estes barrels são ligados, recuperam rapidamente essa informação através da leitura desses ficheiros
 
+Deste modo garantimos assim a integridade dos barrels e que em ambos existe informação idêntica. Ao longo do desenvolvimento percebemos que caso encerrássemos um dos barrels mesmo que no método `sendReliableMessage()`  se verifique a disponibilidade existe uma gap entre o tempo que paramos um barrel e o tempo que o downloader sabe disso e portanto "perdíamos" algumas mensagens. Desse modo tivemos de ainda implementar um método, o `unregisterClient()` e assim no momento em que desligamos um barrel ele imediatamnete desconecta-se do servidor e às mensagens não sao enviadas para os outros barrels.
 
-Deste modo garantimos assim a integridade dos barrels e que em ambos existe informação idêntica. Ao longo do desenvolvimento percebemos que caso encerrássemos um dos barrels mesmo que no método `sendReliableMessage()`  se verifique a disponibilidade existe uma gap entre o tempo que paramos um barrel e o tempo que o downloader sabe disso e portanto "perdíamos" algumas mensagens. Desse modo tivemos de ainda implementar um buffer que guarda as ultimas 200 mensagens e que portanto na reativação do barrel que estava down garante que a informação é consistente entre os barrels.
-
-## 5. Componente RMI e callbacks 
+## 5. Componente RMI e callbacks
 
 O Software utiliza Java RMI (Remote Method Invocation) para implementar comunicação distribuída entre diferentes componentes:
+
 - Gateway
 - Barrels (indexadores)
 - Cliente
@@ -152,18 +142,19 @@ O Software utiliza Java RMI (Remote Method Invocation) para implementar comunica
 ### Interfaces Remotas Principais
 
 1. **IClientGateway**
+
    - Métodos remotos:
      - `addUrlToQueue(String url)`: Adiciona URL à fila de processamento
      - `request_index(String word, int page)`: Pesquisa palavras nos Barrels
-     - `request_url_related(String link)`: Busca links relacionados a uma URL
-
+     - `request_url_related(String link)`: Procuras links que redirecionam para uma certa URL
 2. **IBarrelGateway**
+
    - Métodos remotos:
      - `search(String word, int page)`: Busca indexada em um Barrel específico
      - `related_links(String link)`: Obtém links que apontam para uma URL
      - `getIndexSize()`: Retorna tamanho do índice do Barrel
-
 3. **ReliableMulticastService**
+
    - Métodos remotos:
      - `sendReliableMessage(String message)`: Envia mensagem para todos os clientes
      - `registerClient(ReliableMulticastClient client, String name)`: Registra cliente para receber mensagens
@@ -176,34 +167,35 @@ No método `request_index()` do Gateway, há uma estratégia robusta de failover
 
 ```java
 while (true) {
-    barrels = registry.list();
-    if (barrels.length == 0) {
-        Thread.sleep(2000);
-    }
+            try {
+                Map<String, ReliableMulticastClient> activeClients = multicastService.getActive();
+                List<String> listaBarrels = new ArrayList<>(activeClients.keySet());
 
-    List<String> filteredBarrels = new ArrayList<>();
-    for (String barrel : barrels) {
-        if (barrel.startsWith("Barrel")) {
-            filteredBarrels.add(barrel);
+                for (String selectedBarrel : listaBarrels) {
+                    try {
+                        System.out.println("A tentar conectar ao Barrel: " + selectedBarrel);
+                        IBarrelGateway barrel = (IBarrelGateway) registry.lookup(selectedBarrel);
+                        System.out.println("Consegui");
+                        results = barrel.search(word, page);
+                        break;
+                    } catch (Exception e) {
+                        System.out.println("Erro ao conectar ao Barrel " + selectedBarrel + ". Tentando outro...");
+                    }
+                }
+                if (results != null) {
+                    break;
+                }
+                System.out.println("Todos os Barrels falharam. Tentando novamente em 2 segundos...");
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RemoteException("Erro ao buscar palavra.", e);
+            }
         }
-    }
-
-    for (String selectedBarrel : filteredBarrels) {
-        try {
-            IBarrelGateway barrel = (IBarrelGateway) registry.lookup(selectedBarrel);
-            results = barrel.search(word, page);
-            break;
-        } catch (Exception e) {
-            System.out.println("Erro ao conectar ao Barrel " + selectedBarrel);
-        }
-    }
-
-    if (results != null) break;
-    Thread.sleep(2000);
-}
 ```
 
 #### Características do Failover:
+
 - Ciclo de tentativas contínuas
 - Filtragem de Barrels ativos
 - Tentativa sequencial de conexão
@@ -214,21 +206,32 @@ while (true) {
 No `ReliableMulticastServiceImpl`, implementa-se um mecanismo de entrega confiável:
 
 ```java
-private void reenviarMensagensPendentes() {
-    if (!todosClientesDisponiveis()) return;
+ @Override
+    public void sendReliableMessage(String message) throws RemoteException {
+        while (Ativosclients.size() != clients.size()) {
+            try {
+                System.out.println("A tentar....");
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RemoteException("Thread interrompida durante o timeout", e);
+            }
+        }
 
-    while (!mensagensPendentes.isEmpty()) {
-        String mensagem = mensagensPendentes.poll();
-        enviarParaTodos(mensagem);
+        for (ReliableMulticastClient client : clients.values()) {
+            try {
+                client.receiveMessage(message);
+            } catch (RemoteException e) {
+                System.out.println("Um dos barrels foi parado!!!!");
+            }
+        }
     }
-}
 ```
 
 #### Características:
-- Fila de mensagens pendentes
-- Verificação de disponibilidade dos clientes
-- Reenvio automático de mensagens não entregues
-- Thread de monitoramento a cada 5 segundos
+
+- Verificação de disponibilidade de todos os clientes
+- Paragem do envio das mensagens assim que um barrel estiver down
 
 ### 3. Callback de Estatísticas
 
@@ -249,8 +252,78 @@ public void notifyStats(Statistics stats) {
 ```
 
 #### Características:
+
 - Notificação automática de múltiplos clientes
 - Remoção dinâmica de clientes inacessíveis
 - Tolerância a falhas na comunicação
 
+## Distribuícao de tarefas
 
+Durante o desenvolvimento do trabalho a maior parte das vezes foi feito em conjunto e portanto trabalhámos os dois no mesmo número de funcionalidades, por vezes um de nós ficou a trabalhar mais num certo componente mas depois o outro compensava num outro. Podemos dizer que cada um de nós participou em todas as decisoes tomadas e compreendemos todo o código desenvolvido.
+
+João Vaz -> Trabalhou em todos os componetes do trabalho
+João Dias -> Trabalhou em todos os componentes do trabalho
+
+## Descrição dos testes realizados
+
+**TESTE -> Indexar novo URL introduzido por utilizador**
+
+**Esperado** -> O URL introduzido pelo utilizador é armazenado na base de dados e entra na fila de processamento para ser indexado.
+
+**Observado** -> O URL foi armazenado corretamente e foi processado conforme esperado, aparecendo nos resultados de busca.
+
+---
+
+**TESTE -> Indexar iterativamente ou recursivamente todos os URLs encontrados**
+
+**Esperado** -> O sistema deve seguir os links das páginas indexadas, adicionando novos URLs encontrados à fila de indexação.
+
+**Observado** -> Os URLs foram corretamente extraídos e adicionados à fila de indexação, verificando-se a propagação da indexação.
+
+---
+
+**TESTE -> Pesquisar páginas que contenham um conjunto de palavras**
+
+**Esperado** -> O sistema deve retornar todas as páginas indexadas que contêm todas as palavras pesquisadas.
+
+**Observado** -> Os resultados apresentados correspondem ao esperado, retornando apenas páginas que contêm as palavras especificadas.
+
+---
+
+**TESTE -> Páginas ordenadas por número de ligações recebidas de outras páginas**
+
+**Esperado** -> As páginas devem ser exibidas em ordem decrescente de ligações recebidas.
+
+**Observado** -> A ordenação está correta, com as páginas mais referenciadas aparecendo primeiro.
+
+---
+
+**TESTE -> Consultar lista de páginas com ligações para uma página específica**
+
+**Esperado** -> Ao consultar uma página, o sistema deve listar corretamente todas as páginas que possuem links para ela.
+
+**Observado** -> A lista de ligações está correta e reflete os links existentes na base de dados.
+
+---
+
+**TESTE -> Resultados da pesquisa agrupados de 10 em 10**
+
+**Esperado** -> Os resultados devem ser apresentados em grupos de 10, com paginação disponível para navegar entre os grupos.
+
+**Observado** -> A paginação funciona corretamente e é feita do lado dos barrels e não do lado do cliente, exibindo 10 resultados por página e permite ao cliente navegar entre as páginas.
+
+---
+
+**TESTE -> Desligar um barrel, tendo dois barrels e estando os downloaders a funcionar**
+
+**Esperado** -> Os downloaders param de enviar mensagens, espera-se que ambos os barrels fiquem com a mesma informação.
+
+**Observado** -> Os downloaders param de enviar mensagens, e ao consultar as estatísticas é possível verificar que ambos os barrels possuem a mesma informação.
+
+---
+
+**TESTE -> Desligar um ou os dois downloaders**
+
+**Esperado** -> Todo o sistema funciona de maneira igual, apenas os URLs não são processados e obviamente não são enviadas novas mensagens.
+
+**Observado** -> Como esperado, o não funcionamento dos downloaders não influencia o funcionamento do restante sistema.
