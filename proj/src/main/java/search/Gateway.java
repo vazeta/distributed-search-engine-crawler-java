@@ -11,7 +11,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +133,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     @Override
     public List<String> request_url_related(String link) throws RemoteException {
         Registry registry;
-        String[] barrels;
         try {
             registry = LocateRegistry.getRegistry(1099);
         } catch (Exception e) {
@@ -142,19 +140,8 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         }
         while (true) {
             try {
-                barrels = registry.list();
-                if (barrels.length == 0) {
-                    System.out.println("Nenhum Barrel disponível. Tentando novamente em 2 segundos...");
-                    Thread.sleep(2000);
-                }
-                List<String> listaBarrels = new ArrayList<>(Arrays.asList(barrels));
-                List<String> filteredBarrels = new ArrayList<>();
-                for (String barrel : listaBarrels) {
-                    if (barrel.startsWith("Barrel")) {
-                        filteredBarrels.add(barrel);
-                    }
-                }
-                listaBarrels = filteredBarrels;
+                Map<String, ReliableMulticastClient> activeClients = multicastService.getActive();
+                List<String> listaBarrels = new ArrayList<>(activeClients.keySet());
 
                 for (String selectedBarrel : listaBarrels) {
                     try {
@@ -188,7 +175,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         }
 
         Registry registry;
-        String[] barrels;
         List<String> results = null;
         try {
             registry = LocateRegistry.getRegistry(1099);
@@ -201,19 +187,8 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
         while (true) {
             try {
-                barrels = registry.list();
-                if (barrels.length == 0) {
-                    System.out.println("Nenhum Barrel disponível. Tentando novamente em 2 segundos...");
-                    Thread.sleep(2000);
-                }
-                List<String> listaBarrels = new ArrayList<>(Arrays.asList(barrels));
-                List<String> filteredBarrels = new ArrayList<>();
-                for (String barrel : listaBarrels) {
-                    if (barrel.startsWith("Barrel")) {
-                        filteredBarrels.add(barrel);
-                    }
-                }
-                listaBarrels = filteredBarrels;
+                Map<String, ReliableMulticastClient> activeClients = multicastService.getActive();
+                List<String> listaBarrels = new ArrayList<>(activeClients.keySet());
 
                 for (String selectedBarrel : listaBarrels) {
                     try {

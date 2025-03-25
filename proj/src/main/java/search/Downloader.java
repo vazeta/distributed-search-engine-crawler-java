@@ -32,121 +32,111 @@ public class Downloader {
     private static HashSet<String> urlListFile;
     private static ReliableMulticastService multicastService1;
     private static int size_inicial;
-    private static HashSet<String> uniqueUrls = new HashSet<>();
-    
-        public static void main(String[] args) throws IOException {
-            urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
-            size_inicial = urlListFile.size();
-            carregarStopWords("lib/stopwords.txt");
+
+    public static void main(String[] args) throws IOException {
+        urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
+        size_inicial = urlListFile.size();
+        carregarStopWords("lib/stopwords.txt");
+        try {
+
+            Registry registry;
             try {
-    
-                Registry registry;
-                try {
-    
-                    registry = LocateRegistry.getRegistry("localhost", 1097);
-                    System.out.println("Conectando ao registro existente na porta 1097...");
-                    registry.list();
-                } catch (Exception e) {
-    
-                    System.out.println("Falha ao conectar ao RMI Registry na porta 1097.");
-                    e.printStackTrace();
-                    return;
-                }
-    
-                try {
-                    multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticast");
-                    System.out.println("ReliableMulticastService encontrado com sucesso.");
-                } catch (NotBoundException e) {
-                    System.out.println("ReliableMulticastService não encontrado no RMI Registry na porta 1097.");
-                    e.printStackTrace();
-                    return;
-                }
-                Registry urlregistry = LocateRegistry.getRegistry("localhost", 1099);
-                queue = (URLQueue) urlregistry.lookup("URLQueue");
-    
-                System.out.println("Downloaders iniciados.");
-    
-                int numDownloaders = 5;
-                for (int i = 0; i < numDownloaders; i++) {
-                    new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
-                }
-    
+
+                registry = LocateRegistry.getRegistry("localhost", 1097);
+                System.out.println("Conectando ao registro existente na porta 1097...");
+                registry.list();
             } catch (Exception e) {
+
+                System.out.println("Falha ao conectar ao RMI Registry na porta 1097.");
                 e.printStackTrace();
+                return;
             }
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("Ctrl+C detectado! Salvando estado antes de sair...");
-                Guardar(size_inicial);
-            }));
-        }
-    
-        private static class DownloaderTask implements Runnable {
-            private static URLQueue queue;
-    
-            public DownloaderTask(URLQueue queue) {
-                this.queue = queue;
-            }
-    
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        String url = queue.getNextURL();
-                        if (url != null) {
-                            System.out.println(Thread.currentThread().getName() + " processando: " + url);
-                            processarPagina(url, queue);
-    
-                        }
-    
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    
-        private static void processarPagina(String url, URLQueue queue) {
-            
+
             try {
-                if (!urlListFile.contains(url)) {
-                    System.out.println(Thread.currentThread().getName() + " baixando: " + url);
-                    
-    
-                uniqueUrls.add(url);
-
-                Document doc = Jsoup.connect(url).get();
-                String texto = doc.text();
-                String titulo = doc.title();
-                String citacao = doc.select("meta[name=description]").attr("content");
-
-                if (citacao == null || citacao.isEmpty()) {
-                    Element primeiroParagrafo = doc.select("p").first();
-                    if (primeiroParagrafo != null) {
-                        citacao = primeiroParagrafo.text();
-                    }
-                }
-
-                Elements links = doc.select("a[href]");
-                for (Element link : links) {
-                    String linkAbsoluto = link.absUrl("href");
-
-                    int hashIndex = linkAbsoluto.indexOf("#");
-                    if (hashIndex != -1) {
-                        linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
-                    }
-
-                    if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)
-                            && !uniqueUrls.contains(linkAbsoluto)) {
-                        queue.addURL(linkAbsoluto);
-                        uniqueUrls.add(linkAbsoluto);
-                        saveRelation(url, linkAbsoluto);
-                    }
-                }
-                processarPalavras(texto, url, titulo, citacao);
-                System.out.println("LINK PROCESSADO!!!!!");
-            } else {
-                System.out.println("URL: " + url + " já foi processado.");
+                multicastService1 = (ReliableMulticastService) registry.lookup("ReliableMulticast");
+                System.out.println("ReliableMulticastService encontrado com sucesso.");
+            } catch (NotBoundException e) {
+                System.out.println("ReliableMulticastService não encontrado no RMI Registry na porta 1097.");
+                e.printStackTrace();
+                return;
             }
+            Registry urlregistry = LocateRegistry.getRegistry("localhost", 1099);
+            queue = (URLQueue) urlregistry.lookup("URLQueue");
+
+            System.out.println("Downloaders iniciados.");
+
+            int numDownloaders = 5;
+            for (int i = 0; i < numDownloaders; i++) {
+                new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Ctrl+C detectado! Salvando estado antes de sair...");
+            Guardar(size_inicial);
+        }));
+    }
+
+    private static class DownloaderTask implements Runnable {
+        private static URLQueue queue;
+
+        public DownloaderTask(URLQueue queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    String url = queue.getNextURL();
+                    if (url != null) {
+                        System.out.println(Thread.currentThread().getName() + " processando: " + url);
+                        processarPagina(url, queue);
+
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static void processarPagina(String url, URLQueue queue) {
+
+        try {
+
+            System.out.println(Thread.currentThread().getName() + " baixando: " + url);
+            Document doc = Jsoup.connect(url).get();
+            String texto = doc.text();
+            String titulo = doc.title();
+            String citacao = doc.select("meta[name=description]").attr("content");
+
+            if (citacao == null || citacao.isEmpty()) {
+                Element primeiroParagrafo = doc.select("p").first();
+                if (primeiroParagrafo != null) {
+                    citacao = primeiroParagrafo.text();
+                }
+            }
+
+            Elements links = doc.select("a[href]");
+            for (Element link : links) {
+                String linkAbsoluto = link.absUrl("href");
+
+                int hashIndex = linkAbsoluto.indexOf("#");
+                if (hashIndex != -1) {
+                    linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
+                }
+
+                if (isValidURL(linkAbsoluto)) {
+                    queue.addURL(linkAbsoluto);
+                    saveRelation(url, linkAbsoluto);
+                }
+            }
+            processarPalavras(texto, url, titulo, citacao);
+            System.out.println("LINK PROCESSADO!!!!!");
 
         } catch (UnsupportedMimeTypeException e) {
 

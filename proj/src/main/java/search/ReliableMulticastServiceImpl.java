@@ -58,4 +58,10 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
             System.out.println("Cliente " + name + " não encontrado para desregistro.");
         }
     }
+
+    @Override
+    public synchronized Map<String,ReliableMulticastClient> getActive() throws RemoteException {
+        return Ativosclients;
+    }
+
 }
