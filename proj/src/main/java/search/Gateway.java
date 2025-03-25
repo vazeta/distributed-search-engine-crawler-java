@@ -29,6 +29,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         gatewayReg();
         loadSearchCounts();
     }
+
     private static final String SEARCH_DATA_FILE = "..//data//procuras.obj";
 
     private void loadSearchCounts() {
@@ -205,20 +206,18 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             totalResponseCount++;
         }
         long avgResponseTime = (totalResponseCount > 0) ? totalResponseTime / totalResponseCount : 0;
-        //alterar..................................................
         int totalSearches = searchCounts.values().stream().mapToInt(Integer::intValue).sum();
         Map<String, Integer> barrelIndexSizes = new HashMap<>();
         try {
-            String[] allNames = registry.list();
-            for (String name : allNames) {
-                if (name.startsWith("Barrel")) {
-                    try {
-                        IBarrelGateway barrel = (IBarrelGateway) registry.lookup(name);
-                        int size = barrel.getIndexSize();
-                        barrelIndexSizes.put(name, size);
-                    } catch (Exception ex) {
-                        System.out.println("Erro ao conectar ao Barrel " + name + ". Tentando outro...");
-                    }
+            Map<String, ReliableMulticastClient> activeClients = multicastService.getActive();
+            List<String> listaBarrels = new ArrayList<>(activeClients.keySet());
+            for (String Selectedbarrel : listaBarrels) {
+                try {
+                    IBarrelGateway barrel = (IBarrelGateway) registry.lookup(Selectedbarrel);
+                    int size = barrel.getIndexSize();
+                    barrelIndexSizes.put(Selectedbarrel, size);
+                } catch (Exception ex) {
+                    System.out.println("Erro ao conectar ao Barrel " + Selectedbarrel + ". Tentando outro...");
                 }
             }
         } catch (Exception e) {
