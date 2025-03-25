@@ -14,6 +14,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     private String barrelName;
     private String fileName;
     private String fileName1;
+    private static ReliableMulticastService multicastService = null;
 
     public Barrel(String name) throws RemoteException {
         super();
@@ -27,6 +28,11 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         registerWithReliableMulticastService();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                multicastService.unregisterClient(this.barrelName);
+            } catch (Exception e) {
+                System.out.println("Nao foi possivel desconectar");
+            }
             System.out.println("Detectado encerramento. Salvando dados...");
             StorageUtil.saveData(index, fileName);
             StorageUtil.saveData(linksCorr, fileName1);
@@ -58,7 +64,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     private void registerWithReliableMulticastService() {
         try {
             Registry registry = LocateRegistry.getRegistry(1097);
-            ReliableMulticastService multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticast");
+            multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticast");
             multicastService.registerClient(this, this.barrelName);
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
         } catch (RemoteException | NotBoundException e) {
