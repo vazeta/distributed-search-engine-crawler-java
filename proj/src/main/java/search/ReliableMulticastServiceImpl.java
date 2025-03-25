@@ -4,75 +4,54 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ReliableMulticastServiceImpl extends UnicastRemoteObject implements ReliableMulticastService {
     private Map<String, ReliableMulticastClient> clients;
-    private final Queue<String> mensagensPendentes;
 
     protected ReliableMulticastServiceImpl() throws RemoteException {
         super();
-        this.mensagensPendentes = new ConcurrentLinkedQueue<>();
         this.clients = new HashMap<>();
-        iniciarMonitoramento();
     }
 
     @Override
-    public synchronized void sendReliableMessage(String message) throws RemoteException {
-        if (!todosClientesDisponiveis()) {
-            System.out.println("Nem todos os clientes estão disponíveis. Armazenando mensagem pendente.->" + "->"+ message);
-            mensagensPendentes.add(message);
-            return;
-        }
-
-        enviarParaTodos(message);
-    }
-
-    private boolean todosClientesDisponiveis() {
-        for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
-            ReliableMulticastClient client = entry.getValue();
-            try {
-                client.ping();
-            } catch (RemoteException e) {
-                System.out.println("Cliente " + entry.getKey() + " está offline.");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void enviarParaTodos(String message) {
-        for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
-            try {
-                entry.getValue().receiveMessage(message);
-            } catch (RemoteException e) {
-                System.out.println("Erro ao enviar mensagem para " + entry.getKey());
-            }
-        }
-    }
-
-    private void reenviarMensagensPendentes() {
-        if (!todosClientesDisponiveis()) return;
-
-        while (!mensagensPendentes.isEmpty()) {
-            String mensagem = mensagensPendentes.poll();
-            enviarParaTodos(mensagem);
-        }
-    }
-
-    private void iniciarMonitoramento() {
-        new Thread(() -> {
-            while (true) {
+    public void sendReliableMessage(String message) throws RemoteException {
+        int attempt = 0;
+        boolean allAvailable = false;
+        
+        while (!allAvailable) {
+            attempt++;
+            boolean hasUnavailableClients = false;
+            for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
+                String clientName = entry.getKey();
+                ReliableMulticastClient client = entry.getValue();
                 try {
-                    Thread.sleep(5000);
-                    reenviarMensagensPendentes();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                    client.ping(); // Método fictício para testar conectividade
+                } catch (RemoteException e) {
+                    hasUnavailableClients = true;
+                    System.out.println("Cliente " + clientName + " inacessível, tentando novamente.");
                 }
             }
-        }).start();
+            
+            if (!hasUnavailableClients) {
+                allAvailable = true;
+            } else {
+                try {
+                    Thread.sleep(1000); // Espera antes de tentar novamente
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RemoteException("Thread interrompida durante o timeout", e);
+                }
+            }
+        }
+        
+        // Agora que todos estão disponíveis, enviamos a mensagem
+        for (ReliableMulticastClient client : clients.values()) {
+            try {
+                client.receiveMessage(message);
+            } catch (RemoteException e) {
+                System.out.println("Um dos barrels foi parado!!!!");
+            }
+        }
     }
 
     @Override
