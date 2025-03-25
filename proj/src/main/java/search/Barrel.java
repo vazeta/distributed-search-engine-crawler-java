@@ -88,7 +88,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         }
     }
 
-    private void saveIndex(String mensagem) {
+    private synchronized void saveIndex(String mensagem) {
         String[] partes = mensagem.split(" ");
         if (partes.length == 3) {
             linksCorr.computeIfAbsent(partes[1], k -> new HashSet<>()).add(partes[2]);
