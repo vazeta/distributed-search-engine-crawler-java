@@ -63,7 +63,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
             System.out.println("Fila de URLs pronta para uso!");
 
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.out.println("Erro na criacao da Queue.");
         }
     }
 }

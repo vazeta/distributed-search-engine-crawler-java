@@ -98,7 +98,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                 statsService.subscribeStatistics(statsClient);
                 System.out.println("Cliente inscrito para receber atualizações de estatísticas.");
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Erro no registo do cliente no serviço de estatisticas.");
             }
 
             while (true) {
@@ -205,7 +205,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                                 System.out.println("Ainda não há estatísticas disponíveis.");
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            System.out.println("Erro na procura de Stats!");
                         }
                         break;
 

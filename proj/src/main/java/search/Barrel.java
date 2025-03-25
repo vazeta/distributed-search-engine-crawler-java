@@ -48,7 +48,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             System.out.println("Barrel registrado via Gateway.");
         } catch (Exception e) {
             System.err.println("Erro ao registrar o Barrel via Gateway:");
-            e.printStackTrace();
         }
     }
 
@@ -69,7 +68,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Erro ao registrar " + barrelName + " no ReliableMulticastService.");
-            e.printStackTrace();
         }
     }
 
@@ -152,7 +150,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         try {
             new Barrel(args[0]);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.out.println("Erro na criacao do Barrel.");
         }
     }
 }

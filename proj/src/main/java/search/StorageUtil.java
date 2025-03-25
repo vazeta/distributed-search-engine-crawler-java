@@ -26,7 +26,6 @@ public class StorageUtil {
             fos.getFD().sync();
         } catch (IOException e) {
             System.err.println("Erro ao salvar no arquivo temporário: " + tempFilePath);
-            e.printStackTrace();
             return;
         }
 
@@ -35,7 +34,6 @@ public class StorageUtil {
             System.out.println("Dados salvos com sucesso em: " + filePath);
         } catch (IOException e) {
             System.err.println("Erro ao renomear o arquivo temporário para: " + filePath);
-            e.printStackTrace();
         }
     }
 
@@ -59,7 +57,6 @@ public class StorageUtil {
             return (T) objIn.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Erro ao carregar arquivo: " + filePath);
-            e.printStackTrace();
             return defaultValue;
         }
     }

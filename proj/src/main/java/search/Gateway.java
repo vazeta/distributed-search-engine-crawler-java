@@ -53,7 +53,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Erro ao carregar os dados de pesquisa.");
-            e.printStackTrace();
         }
     }
 
@@ -62,7 +61,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             oos.writeObject(searchCounts);
         } catch (IOException e) {
             System.err.println("Erro ao salvar os dados de pesquisa.");
-            e.printStackTrace();
         }
     }
 
@@ -92,7 +90,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             System.out.println("Gateway RMI registrado com sucesso.");
         } catch (RemoteException e) {
             System.out.println("Erro ao registrar o Gateway no RMI!");
-            e.printStackTrace();
         }
     }
 
@@ -109,7 +106,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             queue.addURL(url);
             System.out.println("Gateway: URL " + url + " enviada para a fila");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Erro ao encontrar a QUEUE.");
         }
     }
 
@@ -120,8 +117,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             System.out.println("Barrel " + barrelName + " registrado via Gateway.");
         } catch (RemoteException e) {
             System.err.println("Erro ao registrar o Barrel " + barrelName);
-            e.printStackTrace();
-            throw e;
         }
     }
 
@@ -147,14 +142,12 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                         return results;
                     } catch (Exception e) {
                         System.out.println("Erro ao conectar ao Barrel " + selectedBarrel + ". Tentando outro...");
-                        e.printStackTrace();
                     }
                 }
                 System.out.println("Todos os Barrels falharam. Tentando novamente em 2 segundos...");
                 Thread.sleep(2000);
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new RemoteException("Erro ao buscar palavra.", e);
+                System.out.println("Erro ao buscar palavra.");
             }
         }
     }
@@ -201,8 +194,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 System.out.println("Todos os Barrels falharam. Tentando novamente em 2 segundos...");
                 Thread.sleep(2000);
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new RemoteException("Erro ao buscar palavra.", e);
+                System.out.println("Erro ao buscar palavra.");
             }
         }
 
@@ -213,7 +205,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             totalResponseCount++;
         }
         long avgResponseTime = (totalResponseCount > 0) ? totalResponseTime / totalResponseCount : 0;
-
+        //alterar..................................................
         int totalSearches = searchCounts.values().stream().mapToInt(Integer::intValue).sum();
         Map<String, Integer> barrelIndexSizes = new HashMap<>();
         try {
@@ -230,7 +222,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Erro no aceso aos barrels.");
         }
         List<String> top10 = getTop10Searches();
         Statistics stats = new Statistics(totalSearches, barrelIndexSizes.size(), avgResponseTime);
@@ -241,7 +233,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
             statsService.notifyStats(stats);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Erro no acesso e notificacao de novas estatisticas.");
         }
 
         return results;
@@ -274,7 +266,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             registry.rebind("StatisticsService", statsService);
             System.out.println("Serviço de Estatísticas registrado com sucesso.");
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.out.println("Erro na criacao de gateway.");
         }
     }
 }

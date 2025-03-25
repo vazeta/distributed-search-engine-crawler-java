@@ -46,9 +46,7 @@ public class Downloader {
                 System.out.println("Conectando ao registro existente na porta 1097...");
                 registry.list();
             } catch (Exception e) {
-
                 System.out.println("Falha ao conectar ao RMI Registry na porta 1097.");
-                e.printStackTrace();
                 return;
             }
 
@@ -57,7 +55,6 @@ public class Downloader {
                 System.out.println("ReliableMulticastService encontrado com sucesso.");
             } catch (NotBoundException e) {
                 System.out.println("ReliableMulticastService não encontrado no RMI Registry na porta 1097.");
-                e.printStackTrace();
                 return;
             }
             Registry urlregistry = LocateRegistry.getRegistry("localhost", 1099);
@@ -71,7 +68,7 @@ public class Downloader {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Erro no registo do downloader.");
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Ctrl+C detectado! Salvando estado antes de sair...");
@@ -98,7 +95,7 @@ public class Downloader {
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println("Erro na busca de um novo URL.");
                 }
             }
         }
@@ -155,7 +152,6 @@ public class Downloader {
 
         } catch (Exception e) {
             System.out.println("Erro inesperado ao processar a URL: " + url);
-            e.printStackTrace();
         }
     }
 
@@ -229,7 +225,7 @@ public class Downloader {
         try {
             multicastService1.sendReliableMessage(mens);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            System.out.println("Erro no envio de uma mensagem via multicast/RMI.");
         }
 
     }
