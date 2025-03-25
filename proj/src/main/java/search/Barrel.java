@@ -12,22 +12,30 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     private HashMap<String, HashSet<String>> index;
     private HashMap<String, HashSet<String>> linksCorr = new HashMap<>();
     private String barrelName;
-    // private static final String PAGES_FILE = "paginas.obj";
+    private String fileName;
+    private String fileName1;
 
     public Barrel(String name) throws RemoteException {
         super();
         this.barrelName = name;
-        String fileName = "paginas_" + barrelName + ".obj";
+        this.fileName = "paginas_" + barrelName + ".obj";
+        this.fileName1 = "links_" + barrelName + ".obj";
         this.index = StorageUtil.loadData(fileName, new HashMap<>());
-        System.out.println(barrelName + "carregou" + index.size() + "palavras do aquivo");
+        this.linksCorr = StorageUtil.loadData(fileName1, new HashMap<>());
+        System.out.println(barrelName + " carregou " + index.size() + " palavras do arquivo");
         registerWithGateway();
         registerWithReliableMulticastService();
-    }
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Detectado encerramento. Salvando dados...");
+            StorageUtil.saveData(index, fileName);
+            StorageUtil.saveData(linksCorr, fileName1);
+            System.out.println("Dados salvos com sucesso.");
+        }));
+    }
+    
     private void registerWithGateway() {
         try {
-            // Altere para o IP do PC Windows onde o Gateway está rodando, por exemplo,
-            // "192.168.71.1"
             Registry registry = LocateRegistry.getRegistry(1099);
             IClientGateway gateway = (IClientGateway) registry.lookup("GatewayService");
             gateway.registerBarrel(this.barrelName, this);
@@ -39,23 +47,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     }
 
     public synchronized void storeDataInIndex(String palavra, String infoAssociada) {
-        if (index.containsKey(palavra)) {
-            index.get(palavra).add(infoAssociada);
-        } else {
-            HashSet<String> infoSet = new HashSet<>();
-            infoSet.add(infoAssociada);
-            index.put(palavra, infoSet);
-        }
-        // System.out.println(barrelName + " Armazenou: " + palavra + " -> " +
-        // infoAssociada);
-
-        // System.out.println("[" + barrelName + "] Armazenado: " + palavra + " -> " +
-        // infoAssociada);
-
-        // Salvar índice atualizado
-        String fileName = "paginas_" + barrelName + ".obj";
-        StorageUtil.saveData(index, fileName);
-
+        index.computeIfAbsent(palavra, k -> new HashSet<>()).add(infoAssociada);
     }
 
     @Override
@@ -66,12 +58,9 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     private void registerWithReliableMulticastService() {
         try {
             Registry registry = LocateRegistry.getRegistry(1097);
-            ReliableMulticastService multicastService = (ReliableMulticastService) registry
-                    .lookup("ReliableMulticast");
-
+            ReliableMulticastService multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticast");
             multicastService.registerClient(this, this.barrelName);
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
-
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Erro ao registrar " + barrelName + " no ReliableMulticastService.");
             e.printStackTrace();
@@ -80,8 +69,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     @Override
     public void receiveMessage(String message) throws RemoteException {
-        // System.out.println("[" + barrelName + "] Mensagem confiável recebida: " +
-        // message);
         if (message.startsWith("flag/")) {
             saveIndex(message);
         } else {
@@ -90,16 +77,12 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     }
 
     @Override
-    public void ping() throws RemoteException {
-
-    }
+    public void ping() throws RemoteException {}
 
     private void processReceivedData(String mensagem) {
         String[] partes = mensagem.split(";", 2);
         if (partes.length == 2) {
-            String palavra = partes[0];
-            String info = partes[1];
-            storeDataInIndex(palavra, info);
+            storeDataInIndex(partes[0], partes[1]);
         } else {
             System.out.println(barrelName + " Mensagem recebida não está no formato esperado.");
         }
@@ -108,15 +91,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     private void saveIndex(String mensagem) {
         String[] partes = mensagem.split(" ");
         if (partes.length == 3) {
-            String link = partes[1];
-            String origem = partes[2];
-            if (linksCorr.containsKey(link)) {
-                linksCorr.get(link).add(origem);
-            } else {
-                HashSet<String> links = new HashSet<>();
-                links.add(origem);
-                linksCorr.put(link, links);
-            }
+            linksCorr.computeIfAbsent(partes[1], k -> new HashSet<>()).add(partes[2]);
         }
     }
 
@@ -138,15 +113,13 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         }
 
         List<String> results = new ArrayList<>(resultsSet);
-
-        
         results.sort((a, b) -> {
             String urlA = a.split("URL: ")[1].split(" ")[0];
             String urlB = b.split("URL: ")[1].split(" ")[0];
-
-            int countA = linksCorr.getOrDefault(urlA, new HashSet<>()).size();
-            int countB = linksCorr.getOrDefault(urlB, new HashSet<>()).size();
-            return Integer.compare(countB, countA);
+            return Integer.compare(
+                linksCorr.getOrDefault(urlB, new HashSet<>()).size(), 
+                linksCorr.getOrDefault(urlA, new HashSet<>()).size()
+            );
         });
 
         int totalPages = (int) Math.ceil(results.size() / 10.0);
@@ -157,22 +130,17 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             return new ArrayList<>();
         }
 
-        
         List<String> pagedResults = new ArrayList<>(results.subList(start, end));
-        
-        pagedResults.add("tem " + (totalPages) + " paginas");
-
+        pagedResults.add("tem " + totalPages + " paginas");
         return pagedResults;
     }
 
     @Override
     public List<String> related_links(String link) throws RemoteException {
-        ArrayList<String> results = new ArrayList<>(linksCorr.getOrDefault(link, new HashSet<>()));
-        return results;
+        return new ArrayList<>(linksCorr.getOrDefault(link, new HashSet<>()));
     }
 
     public static void main(String[] args) {
-
         if (args.length < 1) {
             System.out.println("Uso: java search.Barrel <nomeDoBarrel>");
             return;

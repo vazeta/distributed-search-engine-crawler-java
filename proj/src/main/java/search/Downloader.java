@@ -112,10 +112,9 @@ public class Downloader {
                     System.out.println(Thread.currentThread().getName() + " baixando: " + url);
                     
     
-                    String finalUrl = Jsoup.connect(url).followRedirects(true).execute().url().toString();
-                    uniqueUrls.add(finalUrl);
+                uniqueUrls.add(url);
 
-                Document doc = Jsoup.connect(finalUrl).get();
+                Document doc = Jsoup.connect(url).get();
                 String texto = doc.text();
                 String titulo = doc.title();
                 String citacao = doc.select("meta[name=description]").attr("content");
@@ -136,20 +135,14 @@ public class Downloader {
                         linkAbsoluto = linkAbsoluto.substring(0, hashIndex);
                     }
 
-                    try {
-                        linkAbsoluto = Jsoup.connect(linkAbsoluto).followRedirects(true).execute().url().toString();
-                    } catch (Exception e) {
-                        continue;
-                    }
-
                     if (isValidURL(linkAbsoluto) && !urlListFile.contains(linkAbsoluto)
                             && !uniqueUrls.contains(linkAbsoluto)) {
                         queue.addURL(linkAbsoluto);
                         uniqueUrls.add(linkAbsoluto);
-                        saveRelation(finalUrl, linkAbsoluto);
+                        saveRelation(url, linkAbsoluto);
                     }
                 }
-                processarPalavras(texto, finalUrl, titulo, citacao);
+                processarPalavras(texto, url, titulo, citacao);
                 System.out.println("LINK PROCESSADO!!!!!");
             } else {
                 System.out.println("URL: " + url + " já foi processado.");

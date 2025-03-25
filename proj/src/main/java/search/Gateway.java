@@ -1,5 +1,11 @@
 package search;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,12 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     // Contador para os termos pesquisados
     private Map<String, Integer> searchCounts = new HashMap<>();
     private ReliableMulticastService multicastService;
-    
+
     // Campos para o cálculo do tempo médio (cumulativo)
     private long totalResponseTime = 0;
     private int totalResponseCount = 0;
@@ -23,14 +30,53 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     public Gateway() throws RemoteException {
         super();
         multicastService = new ReliableMulticastServiceImpl();
-        gatewayReg(); 
+        gatewayReg();
+        loadSearchCounts();
+    }
+
+    private static final String SEARCH_DATA_FILE = "..//data//procuras.obj";
+
+    private void loadSearchCounts() {
+        File file = new File(SEARCH_DATA_FILE);
+        if (!file.exists())
+            return;
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            Object obj = ois.readObject(); // Ler o objeto genérico
+            if (obj instanceof Map) { // Verificar se é um Map antes do cast
+                Map<?, ?> tempMap = (Map<?, ?>) obj;
+                searchCounts = new HashMap<>(); // Criar um novo mapa seguro
+
+                for (Map.Entry<?, ?> entry : tempMap.entrySet()) {
+                    if (entry.getKey() instanceof String && entry.getValue() instanceof Integer) {
+                        searchCounts.put((String) entry.getKey(), (Integer) entry.getValue());
+                    }
+                }
+                System.out.println("Dados de pesquisa carregados com sucesso.");
+            } else {
+                System.err.println("Formato de dados inválido no arquivo.");
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erro ao carregar os dados de pesquisa.");
+            e.printStackTrace();
+        }
+    }
+
+    // Salvar os dados de pesquisa ao atualizar
+    private void saveSearchCounts() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SEARCH_DATA_FILE))) {
+            oos.writeObject(searchCounts);
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar os dados de pesquisa.");
+            e.printStackTrace();
+        }
     }
 
     private void gatewayReg() {
         try {
             Registry registry;
             Registry registry1;
-    
+
             try {
                 registry = LocateRegistry.createRegistry(1099);
                 System.out.println("Novo RMI Registry criado na porta 1099.");
@@ -38,7 +84,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 System.out.println("RMI Registry já existente na porta 1099. Conectando...");
                 registry = LocateRegistry.getRegistry(1099);
             }
-    
+
             try {
                 registry1 = LocateRegistry.createRegistry(1097);
                 System.out.println("Novo RMI Registry criado na porta 1097.");
@@ -46,7 +92,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 System.out.println("RMI Registry já existente na porta 1097. Conectando...");
                 registry1 = LocateRegistry.getRegistry(1097);
             }
-    
+
             registry.rebind("GatewayService", this);
             registry1.rebind("ReliableMulticast", multicastService);
             System.out.println("Gateway RMI registrado com sucesso.");
@@ -55,7 +101,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             e.printStackTrace();
         }
     }
-    
 
     @Override
     public void connectClient(IntClient client) throws RemoteException {
@@ -76,7 +121,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     public void registerBarrel(String barrelName, IBarrelGateway barrelStub) throws RemoteException {
         try {
-            Registry registry = LocateRegistry.getRegistry(); 
+            Registry registry = LocateRegistry.getRegistry();
             registry.rebind(barrelName, barrelStub);
             System.out.println("Barrel " + barrelName + " registrado via Gateway.");
         } catch (RemoteException e) {
@@ -110,7 +155,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                     }
                 }
                 listaBarrels = filteredBarrels;
-                
+
                 for (String selectedBarrel : listaBarrels) {
                     try {
                         System.out.println("A tentar conectar ao Barrel: " + selectedBarrel);
@@ -134,7 +179,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     @Override
     public List<String> request_index(String word, int page) throws RemoteException {
-        
+
         if (page == 1) {
             String[] terms = word.split("\\s+");
             for (String term : terms) {
@@ -150,10 +195,10 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         } catch (Exception e) {
             throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
         }
-        
+
         // Inicia a medição do tempo de resposta
         long startTime = System.currentTimeMillis();
-        
+
         while (true) {
             try {
                 barrels = registry.list();
@@ -191,26 +236,25 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 throw new RemoteException("Erro ao buscar palavra.", e);
             }
         }
-        
+
         // Calcula o tempo de resposta desta pesquisa
         long responseTime = System.currentTimeMillis() - startTime;
-        
+
         // Atualiza os campos cumulativos para o tempo médio
-        if (page == 1) {  // Só contabiliza a primeira página para evitar duplicações
+        if (page == 1) { // Só contabiliza a primeira página para evitar duplicações
             totalResponseTime += responseTime;
             totalResponseCount++;
         }
         long avgResponseTime = (totalResponseCount > 0) ? totalResponseTime / totalResponseCount : 0;
 
-        // Consolida as estatísticas: total de pesquisas, número de Barrels ativos e tamanhos dos índices
+        // Consolida as estatísticas: total de pesquisas, número de Barrels ativos e
+        // tamanhos dos índices
         int totalSearches = searchCounts.values().stream().mapToInt(Integer::intValue).sum();
-        int activeBarrels = 0;
         Map<String, Integer> barrelIndexSizes = new HashMap<>();
         try {
             String[] allNames = registry.list();
             for (String name : allNames) {
                 if (name.startsWith("Barrel")) {
-                    activeBarrels++;
                     try {
                         IBarrelGateway barrel = (IBarrelGateway) registry.lookup(name);
                         int size = barrel.getIndexSize();
@@ -224,7 +268,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             e.printStackTrace();
         }
         List<String> top10 = getTop10Searches();
-        Statistics stats = new Statistics(totalSearches, activeBarrels, avgResponseTime);
+        Statistics stats = new Statistics(totalSearches, barrelIndexSizes.size(), avgResponseTime);
         stats.setTop10Searches(top10);
         stats.setBarrelIndexSizes(barrelIndexSizes);
 
@@ -242,6 +286,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     private synchronized void updateSearchCount(String term) {
         int count = searchCounts.getOrDefault(term, 0) + 1;
         searchCounts.put(term, count);
+        saveSearchCounts();
     }
 
     private synchronized List<String> getTop10Searches() {
