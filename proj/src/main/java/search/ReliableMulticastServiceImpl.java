@@ -15,11 +15,8 @@ class ReliableMulticastServiceImpl extends UnicastRemoteObject implements Reliab
 
     @Override
     public void sendReliableMessage(String message) throws RemoteException {
-        int attempt = 0;
         boolean allAvailable = false;
-        
         while (!allAvailable) {
-            attempt++;
             boolean hasUnavailableClients = false;
             for (Map.Entry<String, ReliableMulticastClient> entry : clients.entrySet()) {
                 String clientName = entry.getKey();
