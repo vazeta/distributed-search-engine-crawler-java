@@ -26,10 +26,10 @@ public class Client extends UnicastRemoteObject implements IntClient {
                 Registry registry = LocateRegistry.getRegistry("localhost");
                 gateway = (IClientGateway) registry.lookup("GatewayService");
                 System.out.println("Conectado ao Gateway!");
-                return true; // Conexão bem-sucedida
+                return true;
 
-            } catch (NotBoundException e) { // este tipo de erro so é aplicado por causa do lookup pois nao é um
-                                            // problema de rede logo nao é tratado pelo outro
+            } catch (NotBoundException e) {
+
                 System.out.println("Erro: O serviço 'GatewayService' não está registrado no RMI Registry.");
 
             } catch (RemoteException e) {
@@ -37,7 +37,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             }
 
             tentativas++;
-            if (tentativas < 3) { // dar retrys é uma boa pratica porque java rmi é at most once
+            if (tentativas < 3) {
                 System.out.println("Tentando novamente em 2 segundos... (Tentativa " + (tentativas + 1) + "/3)");
                 try {
                     Thread.sleep(2000);
@@ -47,7 +47,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
             }
         }
 
-        return false; // Se todas as tentativas falharem
+        return false;
     }
 
     public void enviarURL(String url) throws RemoteException {
@@ -63,12 +63,11 @@ public class Client extends UnicastRemoteObject implements IntClient {
         try {
             URI uri = new URI(url);
 
-            // Verifica se tem um esquema válido (http ou https)
             if (uri.getScheme() == null || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
                 return false;
             }
 
-            uri.toURL(); // Isso confirma que a URL pode ser convertida
+            uri.toURL();
             return true;
         } catch (URISyntaxException | MalformedURLException e) {
             return false;
@@ -89,7 +88,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
     public static void main(String args[]) {
         try {
-            Client client = new Client(); // Só prossegue se a conexão for bem-sucedida
+            Client client = new Client();
             Scanner sc = new Scanner(System.in);
 
             try {
@@ -140,7 +139,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
                             if (resultados.get(resultados.size() - 1).startsWith("tem ")) {
                                 totalPages = Integer.parseInt(resultados.get(resultados.size() - 1).split(" ")[1]);
-                                resultados.remove(resultados.size() - 1);                             
+                                resultados.remove(resultados.size() - 1);
                             }
 
                             for (String resultado : resultados) {

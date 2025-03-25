@@ -5,5 +5,4 @@ import java.rmi.RemoteException;
 public interface StatisticsClient extends Remote{
         void updateStats(Statistics Stats) throws RemoteException;
 
-    
 }

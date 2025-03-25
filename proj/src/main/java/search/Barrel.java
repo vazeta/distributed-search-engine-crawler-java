@@ -82,8 +82,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         }
     }
 
-    @Override
-    public void ping() throws RemoteException {}
 
     private void processReceivedData(String mensagem) {
         String[] partes = mensagem.split(";", 2);

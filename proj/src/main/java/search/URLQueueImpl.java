@@ -16,7 +16,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
 
     protected URLQueueImpl() throws RemoteException {
         super();
-        urlQueue = new ConcurrentLinkedQueue<>(); 
+        urlQueue = new ConcurrentLinkedQueue<>();
         processedUrls = new HashSet<>();
     }
 
@@ -37,7 +37,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
         while (urlQueue.isEmpty()) {
             try {
                 System.out.println("Downloader esperando por URLs...");
-                wait(); // Timeout para evitar bloqueios infinitos
+                wait();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;

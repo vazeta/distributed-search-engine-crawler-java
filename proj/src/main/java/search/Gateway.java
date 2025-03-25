@@ -15,14 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
-    // Contador para os termos pesquisados
     private Map<String, Integer> searchCounts = new HashMap<>();
     private ReliableMulticastService multicastService;
 
-    // Campos para o cálculo do tempo médio (cumulativo)
     private long totalResponseTime = 0;
     private int totalResponseCount = 0;
 
@@ -32,7 +29,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         gatewayReg();
         loadSearchCounts();
     }
-
     private static final String SEARCH_DATA_FILE = "..//data//procuras.obj";
 
     private void loadSearchCounts() {
@@ -41,10 +37,10 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             return;
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            Object obj = ois.readObject(); // Ler o objeto genérico
-            if (obj instanceof Map) { // Verificar se é um Map antes do cast
+            Object obj = ois.readObject();
+            if (obj instanceof Map) {
                 Map<?, ?> tempMap = (Map<?, ?>) obj;
-                searchCounts = new HashMap<>(); // Criar um novo mapa seguro
+                searchCounts = new HashMap<>();
 
                 for (Map.Entry<?, ?> entry : tempMap.entrySet()) {
                     if (entry.getKey() instanceof String && entry.getValue() instanceof Integer) {
@@ -61,7 +57,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         }
     }
 
-    // Salvar os dados de pesquisa ao atualizar
     private void saveSearchCounts() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SEARCH_DATA_FILE))) {
             oos.writeObject(searchCounts);
@@ -182,7 +177,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
         }
 
-        // Inicia a medição do tempo de resposta
         long startTime = System.currentTimeMillis();
 
         while (true) {
@@ -212,18 +206,14 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             }
         }
 
-        // Calcula o tempo de resposta desta pesquisa
         long responseTime = System.currentTimeMillis() - startTime;
 
-        // Atualiza os campos cumulativos para o tempo médio
-        if (page == 1) { // Só contabiliza a primeira página para evitar duplicações
+        if (page == 1) {
             totalResponseTime += responseTime;
             totalResponseCount++;
         }
         long avgResponseTime = (totalResponseCount > 0) ? totalResponseTime / totalResponseCount : 0;
 
-        // Consolida as estatísticas: total de pesquisas, número de Barrels ativos e
-        // tamanhos dos índices
         int totalSearches = searchCounts.values().stream().mapToInt(Integer::intValue).sum();
         Map<String, Integer> barrelIndexSizes = new HashMap<>();
         try {
@@ -247,7 +237,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         stats.setTop10Searches(top10);
         stats.setBarrelIndexSizes(barrelIndexSizes);
 
-        // Notifica os clientes inscritos no serviço de estatísticas
         try {
             StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
             statsService.notifyStats(stats);
@@ -279,7 +268,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     public static void main(String[] args) {
         try {
             new Gateway();
-            // Registra o serviço de estatísticas utilizando a implementação adequada
+
             StatisticsServiceImpl statsService = new StatisticsServiceImpl();
             Registry registry = LocateRegistry.getRegistry(1099);
             registry.rebind("StatisticsService", statsService);

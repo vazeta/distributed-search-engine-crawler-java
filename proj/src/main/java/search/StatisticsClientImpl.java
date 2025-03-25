@@ -7,7 +7,6 @@ import java.util.List;
 
 public class StatisticsClientImpl extends UnicastRemoteObject implements StatisticsClient {
 
-    // Armazena a última ordem do Top 10 (apenas os nomes das palavras)
     private List<String> lastTop10Order = new ArrayList<>();
     private long lastAvgResponseTime = -1;
 
