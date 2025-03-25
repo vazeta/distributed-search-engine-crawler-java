@@ -15,4 +15,10 @@ Como correr
 
 
 A FAZER:
--> barrels e multicast tudo mal
+-> barrels desfazados
+-> print stack trace tirar
+-> testar mais cenas 
+-> testar na vm outra vez
+-> ficheiro downloader
+-> relatorio
+-> ver ordem top 10 que sao iguais
