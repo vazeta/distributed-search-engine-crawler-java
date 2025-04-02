@@ -42,7 +42,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     
     private void registerWithGateway() {
         try {
-            Registry registry = LocateRegistry.getRegistry(1099);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
             IClientGateway gateway = (IClientGateway) registry.lookup("GatewayService");
             gateway.registerBarrel(this.barrelName, this);
             System.out.println("Barrel registrado via Gateway.");
@@ -62,7 +62,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     private void registerWithReliableMulticastService() {
         try {
-            Registry registry = LocateRegistry.getRegistry(1097);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1097);
             multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticast");
             multicastService.registerClient(this, this.barrelName);
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");

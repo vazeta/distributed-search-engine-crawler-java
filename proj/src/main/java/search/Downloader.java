@@ -42,7 +42,7 @@ public class Downloader {
             Registry registry;
             try {
 
-                registry = LocateRegistry.getRegistry("localhost", 1097);
+                registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1097);
                 System.out.println("Conectando ao registro existente na porta 1097...");
                 registry.list();
             } catch (Exception e) {
@@ -57,7 +57,7 @@ public class Downloader {
                 System.out.println("ReliableMulticastService não encontrado no RMI Registry na porta 1097.");
                 return;
             }
-            Registry urlregistry = LocateRegistry.getRegistry("localhost", 1099);
+            Registry urlregistry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1099);
             queue = (URLQueue) urlregistry.lookup("URLQueue");
 
             System.out.println("Downloaders iniciados.");

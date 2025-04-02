@@ -10,9 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Properties;
 
 public class StorageUtil {
     private static final String DATA_FOLDER = "..//data//";
+    private static final String CONFIG_FILE = "config.properties";
     public static void saveData(Object data, String fileName) {
         String filePath = DATA_FOLDER + fileName;
         String tempFilePath = filePath + ".tmp";
@@ -58,6 +60,19 @@ public class StorageUtil {
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Erro ao carregar arquivo: " + filePath);
             return defaultValue;
+        }
+    }
+
+    // Método para obter o IP do ficheiro de configuração
+    public static String getIP() {
+        String filePath = DATA_FOLDER + CONFIG_FILE;
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            properties.load(fis);
+            return properties.getProperty("ip", "127.0.0.1"); // Retorna 127.0.0.1 se não encontrar o IP
+        } catch (IOException e) {
+            System.err.println("Erro ao carregar o ficheiro de configuração: " + e.getMessage());
+            return "127.0.0.1";
         }
     }
 
