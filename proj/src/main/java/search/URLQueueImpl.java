@@ -50,7 +50,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
         try {
             Registry registry;
             try {
-                registry = LocateRegistry.getRegistry(1099);
+                registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
                 registry.list();
             } catch (RemoteException e) {
                 System.out.println("RMI Registry não encontrado. Criando um novo...");

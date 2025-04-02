@@ -23,7 +23,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
         int tentativas = 0;
         while (tentativas < 3) {
             try {
-                Registry registry = LocateRegistry.getRegistry("localhost");
+                Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP());
                 gateway = (IClientGateway) registry.lookup("GatewayService");
                 System.out.println("Conectado ao Gateway!");
                 return true;
@@ -93,7 +93,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
 
             try {
                 StatisticsClient statsClient = new StatisticsClientImpl();
-                Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+                Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1099);
                 StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
                 statsService.subscribeStatistics(statsClient);
                 System.out.println("Cliente inscrito para receber atualizações de estatísticas.");
@@ -184,7 +184,7 @@ public class Client extends UnicastRemoteObject implements IntClient {
                         break;
                     case 4:
                         try {
-                            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+                            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1099);
                             StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
                             Statistics stats = statsService.getStats();
                             if (stats != null) {

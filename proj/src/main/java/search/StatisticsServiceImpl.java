@@ -41,7 +41,7 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
     @Override
     public synchronized Statistics getStats() throws RemoteException {
         try {
-            Registry registry = LocateRegistry.getRegistry(1099);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
             String[] names = registry.list();
             Map<String, Integer> barrelIndexSizes = new HashMap<>();
             for (String name : names) {
