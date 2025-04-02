@@ -13,12 +13,17 @@ Como correr
 ->  2 barrels pelo menos (1 em cada pc)
 -> gateway e client em pcs diferentes (apenas 1)
 
+-> dias->barrel->downloader e cliente-> -------------------barrel e cliente linha dif----------- downloader ip na busca da queue
+-> vazeta->barrel->downloader ->gateway->quuee->------gateway  e urlqueue ->linha dif com o meu ip
+
+____________________________________________________________________________________________________________
+_______________________________________META 2_______________________________________________________________
+
+java -Djava.rmi.server.hostname="127.0.0.1" -cp ".:lib/jsoup-1.18.3.jar" search.Gateway
+
+usar isto na gateway e na queue
+
 
 A FAZER:
--> barrels desfazados
--> print stack trace tirar
--> testar mais cenas 
--> testar na vm outra vez
--> ficheiro downloader
--> relatorio
--> ver ordem top 10 que sao iguais
+-> mais do que um cliente(ainda da meta 1)
+
