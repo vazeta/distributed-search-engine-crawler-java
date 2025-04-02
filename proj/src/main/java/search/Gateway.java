@@ -11,9 +11,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
@@ -177,7 +179,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             try {
                 Map<String, ReliableMulticastClient> activeClients = multicastService.getActive();
                 List<String> listaBarrels = new ArrayList<>(activeClients.keySet());
-
+                Collections.shuffle(listaBarrels, new Random());
                 for (String selectedBarrel : listaBarrels) {
                     try {
                         System.out.println("A tentar conectar ao Barrel: " + selectedBarrel);
