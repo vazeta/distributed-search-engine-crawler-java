@@ -69,7 +69,7 @@ public class Downloader {
     }
 
     private static class DownloaderTask implements Runnable {
-        private static URLQueue queue;
+        private URLQueue queue;
 
         public DownloaderTask(URLQueue queue) {
             this.queue = queue;
