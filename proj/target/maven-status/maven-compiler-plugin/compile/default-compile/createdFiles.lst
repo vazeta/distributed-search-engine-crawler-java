@@ -7,6 +7,7 @@ search/Downloader$DownloaderTask.class
 com/example/googol/Example.class
 search/URLQueueImpl.class
 search/ReliableMulticastClient.class
+com/example/googol/controllers/HomeController.class
 search/StatisticsClient.class
 search/StatisticsClientImpl.class
 search/IClientGateway.class

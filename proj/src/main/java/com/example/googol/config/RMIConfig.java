@@ -19,12 +19,8 @@ import search.*;
 public class RMIConfig {
 
     @Bean
-    public Gateway gateway() throws RemoteException, NotBoundException, MalformedURLException {
-        return (Gateway) Naming.lookup("GatewayService");
+    public IClientGateway gateway() throws RemoteException, NotBoundException, MalformedURLException {
+        return (IClientGateway) Naming.lookup("GatewayService");
     }
 
-    @Bean
-    public Statistics statistics() throws RemoteException, NotBoundException, MalformedURLException {
-        return (Statistics) Naming.lookup("StatisticsService");
-    }
 }

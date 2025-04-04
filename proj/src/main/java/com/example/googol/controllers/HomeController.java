@@ -8,16 +8,12 @@ import org.springframework.ui.Model;
 import java.util.List;
 import search.*;
 
+
 @Controller
-public class SearchController {
-
-    @Autowired
-    private IClientGateway gateway;
-
-    @GetMapping("/search")
-    public String search(@RequestParam("q") String query, Model model) throws RemoteException {
-        List<String> results = gateway.request_index(query,1); // método do RMI
-        model.addAttribute("results", results);
-        return "search_results";
+public class HomeController {
+    
+    @GetMapping("/")
+    public String home() {
+        return "greeting";
     }
 }
