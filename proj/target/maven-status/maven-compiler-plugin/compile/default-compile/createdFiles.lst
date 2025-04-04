@@ -1,0 +1,16 @@
+com/example/servingwebcontent/Example.class
+com/example/servingwebcontent/GreetingController.class
+search/ReliableMulticastClientImpl.class
+search/Statistics.class
+com/example/servingwebcontent/forms/Project.class
+com/example/servingwebcontent/ThymeleafServlet.class
+search/ReliableMulticastClient.class
+com/example/servingwebcontent/thedata/Employee.class
+search/StatisticsClient.class
+com/example/servingwebcontent/ServingWebContentApplication.class
+search/StatisticsClientImpl.class
+search/URLQueue.class
+search/IBarrelGateway.class
+search/StatisticsService.class
+com/example/servingwebcontent/beans/Number.class
+search/IntClient.class

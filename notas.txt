@@ -28,3 +28,13 @@ usar isto na gateway e na queue
 A FAZER:
 -> mais do que um cliente(ainda da meta 1)
 
+INTALACOES E COMO CORRES ISTO !!!!!!!!!!
+
+sudo apt install maven(so é preciso fazer 1 vez)
+
+COMO correr
+1. navegar ate proj
+2. mvn spring-boot:run
+
+
+
