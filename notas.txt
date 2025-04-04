@@ -16,17 +16,18 @@ Como correr
 -> dias->barrel->downloader e cliente-> -------------------barrel e cliente linha dif----------- downloader ip na busca da queue
 -> vazeta->barrel->downloader ->gateway->quuee->------gateway  e urlqueue ->linha dif com o meu ip
 
-____________________________________________________________________________________________________________
-_______________________________________META 2_______________________________________________________________
-
 linux -> java -Djava.rmi.server.hostname="127.0.0.1" -cp ".:lib/jsoup-1.18.3.jar" search.Gateway
 windows -> java "-Djava.rmi.server.hostname=192.168.1.7" -cp ".;lib/jsoup-1.18.3.jar" search.Gateway
 
-usar isto na gateway e na queue
-
+usar os comandos acima na gateway e na queue
 
 A FAZER:
 -> mais do que um cliente(ainda da meta 1)
+
+____________________________________________________________________________________________________________
+_______________________________________META 2_______________________________________________________________
+
+-------------------------------------------------------------------------------------------------------------
 
 INTALACOES E COMO CORRES ISTO !!!!!!!!!!
 
