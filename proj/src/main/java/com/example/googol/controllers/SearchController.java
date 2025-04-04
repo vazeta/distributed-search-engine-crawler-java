@@ -15,7 +15,7 @@ public class SearchController {
     private IClientGateway gateway;
 
     @GetMapping("/search")
-    public String search(@RequestParam("q") String query, Model model) throws RemoteException {
+    public String search(@RequestParam("query") String query, Model model) throws RemoteException {
         List<String> results = gateway.request_index(query,1); // método do RMI
         model.addAttribute("results", results);
         return "search_results";

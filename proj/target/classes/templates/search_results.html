@@ -7,8 +7,7 @@
 <h1>Resultados</h1>
 <ul>
     <li th:each="res : ${results}">
-        <a th:href="${res.url}" th:text="${res.title}"></a>
-        <p th:text="${res.snippet}"></p>
+        <a th:href="${res}" th:text="${res}"></a>
     </li>
 </ul>
 </body>

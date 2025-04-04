@@ -39,6 +39,7 @@ COMO correr
 3. mvn spring-boot:run
     o comando em cima corre o ficheiro /proj/src/main/java/com/example/googol/service/ServingWebContentApplication.java
 3. Abrir o browser 127.0.0.1/8080
+4. Se se quiser fazer pesquisas tem de se iniciar um barrel.
 
 DIAS, as 3 pastas que nos devemos focar nesta meta estao dentro de  src/main/java/com/example/googol
 
