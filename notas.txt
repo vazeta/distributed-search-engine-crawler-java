@@ -35,6 +35,7 @@ sudo apt install maven(so é preciso fazer 1 vez)
 COMO correr
 1. navegar ate proj
 2. mvn spring-boot:run
+3. Abrir o browser 127.0.0.1/8080
 
 
 
