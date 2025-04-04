@@ -35,8 +35,13 @@ sudo apt install maven(so é preciso fazer 1 vez)
 
 COMO correr
 1. navegar ate proj
+(2).Supostamente tem de se correr a gateway primeiro para criar os servidores
 2. mvn spring-boot:run
+    neste passo da erro-> nao se consegue conectar ao rmi server
+    o comando em cima corre o ficheiro /proj/src/main/java/com/example/googol/service/ServingWebContentApplication.java
 3. Abrir o browser 127.0.0.1/8080
+
+DIAS a 3 pastas que nos devemos focar nesta meta estao dentro de  src/main/java/com/example/googol
 
 
 

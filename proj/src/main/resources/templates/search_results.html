@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Resultados da pesquisa</title>
+</head>
+<body>
+<h1>Resultados</h1>
+<ul>
+    <li th:each="res : ${results}">
+        <a th:href="${res.url}" th:text="${res.title}"></a>
+        <p th:text="${res.snippet}"></p>
+    </li>
+</ul>
+</body>
+</html>

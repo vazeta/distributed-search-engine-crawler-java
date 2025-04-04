@@ -77,7 +77,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 System.out.println("Novo RMI Registry criado na porta 1099.");
             } catch (RemoteException e) {
                 System.out.println("RMI Registry já existente na porta 1099. Conectando...");
-                registry = LocateRegistry.getRegistry(1099);
+                registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
             }
 
             try {
@@ -85,7 +85,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
                 System.out.println("Novo RMI Registry criado na porta 1097.");
             } catch (RemoteException e) {
                 System.out.println("RMI Registry já existente na porta 1097. Conectando...");
-                registry1 = LocateRegistry.getRegistry(1097);
+                registry1 = LocateRegistry.getRegistry(StorageUtil.getIP(),1097);
             }
 
             registry.rebind("GatewayService", this);
@@ -104,7 +104,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     @Override
     public void addUrlToQueue(String url) throws RemoteException {
         try {
-            Registry registry = LocateRegistry.getRegistry(1099);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
             URLQueue queue = (URLQueue) registry.lookup("URLQueue");
             queue.addURL(url);
             System.out.println("Gateway: URL " + url + " enviada para a fila");
@@ -127,7 +127,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     public List<String> request_url_related(String link) throws RemoteException {
         Registry registry;
         try {
-            registry = LocateRegistry.getRegistry(1099);
+            registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
         } catch (Exception e) {
             throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
         }
@@ -168,7 +168,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         Registry registry;
         List<String> results = null;
         try {
-            registry = LocateRegistry.getRegistry(1099);
+            registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
         } catch (Exception e) {
             throw new RemoteException("Erro ao conectar ao RMI Registry!", e);
         }
@@ -261,7 +261,6 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
     public static void main(String[] args) {
         try {
             new Gateway();
-
             StatisticsServiceImpl statsService = new StatisticsServiceImpl();
             Registry registry = LocateRegistry.getRegistry(1099);
             registry.rebind("StatisticsService", statsService);
