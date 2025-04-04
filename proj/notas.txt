@@ -37,7 +37,7 @@ COMO correr
 1. navegar ate proj
 2.tem de se correr a gateway primeiro para criar os servidores
 3. mvn spring-boot:run
-    o comando em cima corre o ficheiro /proj/src/main/java/com/example/googol/service/ServingWebContentApplication.java
+    o comando em cima corre o ficheiro /proj/src/main/java/com/example/googol/ServingWebContentApplication.java
 3. Abrir o browser 127.0.0.1/8080
 4. Se se quiser fazer pesquisas tem de se iniciar um barrel.
 

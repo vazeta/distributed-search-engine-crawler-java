@@ -2,13 +2,65 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Resultados da pesquisa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .resultado {
+            margin-bottom: 25px;
+        }
+        .resultado a.titulo {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        .resultado .url {
+            font-size: 14px;
+            color: #006621;
+        }
+        .resultado .citacao {
+            font-size: 14px;
+            color: #545454;
+        }
+        .paginacao {
+            margin-top: 40px;
+        }
+        .paginacao a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #1a0dab;
+            font-weight: bold;
+        }
+        .paginacao .pagina-ativa {
+            color: black;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<h1>Resultados</h1>
-<ul>
-    <li th:each="res : ${results}">
-        <a th:href="${res}" th:text="${res}"></a>
-    </li>
-</ul>
+<h1>Resultados da pesquisa para : <span th:text="${query}">Pesquisa</span></h1>
+
+<div th:if="${#lists.isEmpty(results)}">
+    <p>Nenhum resultado encontrado.</p>
+</div>
+
+<div th:each="res : ${results}" class="resultado">
+    <a th:href="${res.link}" th:text="${res.titulo}" class="titulo"></a><br>
+    <span class="url" th:text="${res.link}"></span><br>
+    <p class="citacao" th:text="${res.citacao}"></p>
+</div>
+
+<div class="paginacao" th:if="${pages > 1}">
+    <span th:each="i : ${#numbers.sequence(1, pages)}">
+        <a th:if="${i != currentPage}"
+           th:href="@{/search(query=${query}, page=${i})}"
+           th:text="${i}"></a>
+        <span th:if="${i == currentPage}" th:text="${i}" class="pagina-ativa"></span>
+    </span>
+</div>
+
 </body>
 </html>
