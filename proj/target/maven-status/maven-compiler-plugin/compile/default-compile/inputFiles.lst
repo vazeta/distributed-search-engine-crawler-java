@@ -1,5 +1,6 @@
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/IClientGateway.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/ReliableMulticastServiceImpl.java
+/home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/com/example/googol/ServingWebContentApplication.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/URLQueue.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/StatisticsService.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/IntClient.java
@@ -10,9 +11,9 @@
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/com/example/googol/controllers/SearchController.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/ReliableMulticastService.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/StatisticsClientImpl.java
+/home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/com/example/googol/controllers/HomeController.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/Gateway.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/Statistics.java
-/home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/com/example/googol/service/ServingWebContentApplication.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/ReliableMulticastClientImpl.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/Downloader.java
 /home/vazeta/Desktop/sd/SD_proj/proj/src/main/java/search/URLQueueImpl.java
