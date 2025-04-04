@@ -7,22 +7,22 @@ import org.springframework.context.annotation.Bean;
 
 import javax.servlet.Servlet;
 
-// Assuming Example is a custom servlet, make sure it implements javax.servlet.Servlet
 class Example implements Servlet {
-    // Implement required methods for Servlet
+
     @Override
     public void init(javax.servlet.ServletConfig config) throws javax.servlet.ServletException {
-        // Initialization logic
+
     }
 
     @Override
-    public void service(javax.servlet.ServletRequest req, javax.servlet.ServletResponse res) throws javax.servlet.ServletException, java.io.IOException {
-        // Service logic
+    public void service(javax.servlet.ServletRequest req, javax.servlet.ServletResponse res)
+            throws javax.servlet.ServletException, java.io.IOException {
+
     }
 
     @Override
     public void destroy() {
-        // Cleanup logic
+
     }
 
     @Override
