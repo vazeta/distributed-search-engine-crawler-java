@@ -42,6 +42,5 @@ COMO correr
 4. Se se quiser fazer pesquisas tem de se iniciar um barrel.
 
 DIAS, as 3 pastas que nos devemos focar nesta meta estao dentro de  src/main/java/com/example/googol
-
-
-
+os html alteram-se na pasta /src/main/resources/templates
+temos um bug que se fizermos mvn install, o maven apaga o jsoup.jar e as stopwords mas é algo que nao presisamos de preocupar por agora
