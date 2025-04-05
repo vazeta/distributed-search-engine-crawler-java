@@ -9,7 +9,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import search.*;
 
 @Configuration
-@EnableAspectJAutoProxy(proxyTargetClass=true)  // Isso força o uso de proxies baseados em classe.
+@EnableAspectJAutoProxy(proxyTargetClass=true)
 public class RMIConfig {
 
     @Bean
