@@ -4,35 +4,88 @@
     <title>Resultados da pesquisa</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif, sans-serif;
             padding: 20px;
         }
+
+        /* Topo com logotipo e barra de pesquisa */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #212529;
+            margin-right: 20px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        form.pesquisa {
+            flex-grow: 1;
+            display: flex;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 25px 0 0 25px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #1a0dab;
+            color: white;
+            border: 1px solid #1a0dab;
+            border-left: none;
+            border-radius: 0 25px 25px 0;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0d0080;
+        }
+
         .resultado {
             margin-bottom: 25px;
         }
+
         .resultado a.titulo {
             font-size: 18px;
             font-weight: bold;
             color: #1a0dab;
             text-decoration: none;
         }
+
         .resultado .url {
             font-size: 14px;
             color: #006621;
         }
+
         .resultado .citacao {
             font-size: 14px;
             color: #545454;
         }
+
         .paginacao {
             margin-top: 40px;
         }
+
         .paginacao a {
             margin: 0 5px;
             text-decoration: none;
             color: #1a0dab;
             font-weight: bold;
         }
+
         .paginacao .pagina-ativa {
             color: black;
             font-weight: bold;
@@ -41,7 +94,18 @@
     </style>
 </head>
 <body>
-<h1>Resultados da pesquisa para : <span th:text="${query}">Pesquisa</span></h1>
+
+<!-- Topo com logotipo e barra de pesquisa -->
+<div class="top-bar">
+    <a href="/" class="logo">Googol</a>
+
+    <form class="pesquisa" th:action="@{/search}" method="get">
+        <input type="text" name="query" th:value="${query}" placeholder="Pesquisar...">
+        <input type="submit" value="Pesquisar">
+    </form>
+</div>
+
+<h1>Resultados da pesquisa para: <span th:text="${query}">Pesquisa</span></h1>
 
 <div th:if="${#lists.isEmpty(results)}">
     <p>Nenhum resultado encontrado.</p>
