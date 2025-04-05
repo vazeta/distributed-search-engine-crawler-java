@@ -21,8 +21,7 @@ windows -> java "-Djava.rmi.server.hostname=192.168.1.7" -cp ".;lib/jsoup-1.18.3
 
 usar os comandos acima na gateway e na queue
 
-A FAZER:
--> mais do que um cliente(ainda da meta 1)
+
 
 ____________________________________________________________________________________________________________
 _______________________________________META 2_______________________________________________________________
@@ -44,3 +43,7 @@ COMO correr
 DIAS, as 3 pastas que nos devemos focar nesta meta estao dentro de  src/main/java/com/example/googol
 os html alteram-se na pasta /src/main/resources/templates
 temos um bug que se fizermos mvn install, o maven apaga o jsoup.jar e as stopwords mas é algo que nao presisamos de preocupar por agora
+
+A FAZER:
+-> mais do que um cliente(ainda da meta 1)
+-> quando nao esta a ser processado o link ou seja quando os downloaders estao em baixo diz na mesma na mensagem que o link esta a ser processado
