@@ -27,6 +27,9 @@
         }
         .alert {
             margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
@@ -43,7 +46,7 @@
             </form>
             
             <!-- Alerta para mensagens -->
-            <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
+            <div th:if="${message}" class="alert alert-info" role="alert" th:text="${message}"></div>
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
         </div>
         
