@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Links Relacionados</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+        }
+        /* Topo com logotipo e barra de pesquisa */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #212529;
+            margin-right: 20px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        form.pesquisa {
+            flex-grow: 1;
+            display: flex;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 25px 0 0 25px;
+            width: 100%;
+            max-width: 400px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #1a0dab;
+            color: white;
+            border: 1px solid #1a0dab;
+            border-left: none;
+            border-radius: 0 25px 25px 0;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0d0080;
+        }
+        .resultado {
+            margin-bottom: 25px;
+        }
+        .resultado a.link {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        .paginacao {
+            margin-top: 40px;
+        }
+        .paginacao a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #1a0dab;
+            font-weight: bold;
+        }
+        .paginacao .pagina-ativa {
+            color: black;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Topo com logotipo e barra de pesquisa -->
+<div class="top-bar">
+    <a href="/" class="logo">Googol</a>
+    <form class="pesquisa" th:action="@{/related-links}" method="get">
+        <input type="text" name="link" th:value="${link}" placeholder="Digite o link para consultar..." required>
+        <input type="submit" value="Buscar">
+    </form>
+</div>
+
+<h1>Links que apontam para: <span th:text="${link}">Link</span></h1>
+
+<div th:if="${error}">
+    <p th:text="${error}" style="color:red;"></p>
+</div>
+
+<div th:if="${#lists.isEmpty(relatedLinks)}">
+    <p>Nenhum link relacionado encontrado.</p>
+</div>
+
+<div th:if="${!#lists.isEmpty(relatedLinks)}">
+    <ul>
+        <li th:each="rlink : ${relatedLinks}">
+            <a th:href="${rlink}" th:text="${rlink}" class="link"></a>
+        </li>
+    </ul>
+</div>
+
+<div class="mt-3">
+    <a href="/" class="btn" style="padding:10px 20px; background-color:#1a0dab; color:white; text-decoration:none; border-radius:5px;">Voltar à Home</a>
+</div>
+
+</body>
+</html>

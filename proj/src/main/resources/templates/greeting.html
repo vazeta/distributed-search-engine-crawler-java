@@ -25,6 +25,12 @@
             margin-left: auto;
             margin-right: auto;
         }
+        .related-links-container {
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         .alert {
             margin-top: 20px;
             max-width: 600px;
@@ -50,6 +56,7 @@
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
         </div>
         
+        <!-- Card para adicionar URL -->
         <div class="add-url-container">
             <div class="card">
                 <div class="card-header">
@@ -66,6 +73,24 @@
             </div>
         </div>
         
+        <!-- Card para consultar links relacionados -->
+        <div class="related-links-container">
+            <div class="card">
+                <div class="card-header">
+                    Consultar Links Relacionados
+                </div>
+                <div class="card-body">
+                    <form action="/related-links" method="GET">
+                        <div class="input-group mb-3">
+                            <input type="url" class="form-control" name="link" placeholder="https://..." required>
+                            <button class="btn btn-outline-secondary" type="submit">Consultar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão para estatísticas -->
         <div class="text-center mt-4">
             <a href="/statistics" class="btn btn-outline-info">Ver Estatísticas do Sistema</a>
         </div>
