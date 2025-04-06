@@ -201,7 +201,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
             }
         }
 
-        long responseTime = System.currentTimeMillis() - startTime;
+        double responseTime = (System.currentTimeMillis() - startTime) / 100.0;
 
         if (page == 1) {
             totalResponseTime += responseTime;
