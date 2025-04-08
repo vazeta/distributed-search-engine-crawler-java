@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 public class StatisticsServiceImpl extends UnicastRemoteObject implements StatisticsService {
     private List<StatisticsClient> subscribers;
@@ -41,7 +42,7 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
     @Override
     public synchronized Statistics getStats() throws RemoteException {
         try {
-            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1099);
             String[] names = registry.list();
             Map<String, Integer> barrelIndexSizes = new HashMap<>();
             for (String name : names) {
@@ -54,15 +55,27 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
                     }
                 }
             }
+            
             if (currentStats == null) {
                 currentStats = new Statistics(0, barrelIndexSizes.size(), 0);
-                currentStats.setTop10Searches(new ArrayList<>());
+                // Carrega os top 10 persistidos ou inicializa com dados padrão se não houver
+                List<String> persistedTop10 = StorageUtil.loadData("top10.obj", new ArrayList<>());
+                if (persistedTop10.isEmpty()) {
+                    persistedTop10 = Arrays.asList("Nenhuma pesquisa realizada");
+                }
+                currentStats.setTop10Searches(persistedTop10);
             }
+            
             currentStats.setActiveBarrels(barrelIndexSizes.size());
             currentStats.setBarrelIndexSizes(barrelIndexSizes);
+            
+            // Opcional: salve os dados atuais para persistência
+            StorageUtil.saveData(currentStats.getTop10Searches(), "top10.obj");
+            
             return currentStats;
         } catch (Exception e) {
             throw new RemoteException("Erro ao obter as estatísticas", e);
         }
     }
+
 }

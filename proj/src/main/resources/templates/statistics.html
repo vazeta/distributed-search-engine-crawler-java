@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Estatísticas em Tempo Real</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .stats-container {
+            margin-top: 50px;
+        }
+        .stat {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container stats-container">
+        <h1>Estatísticas do Sistema</h1>
+        <div id="stats">
+            <!-- As estatísticas serão exibidas aqui -->
+            <p class="stat">Aguardando dados...</p>
+        </div>
+        <a href="/" class="btn btn-primary mt-3">Voltar à Home</a>
+    </div>
+    
+    <!-- Bibliotecas SockJS e STOMP -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        // Conecta ao endpoint WebSocket
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+        
+        stompClient.connect({}, function(frame) {
+            console.log('Conectado: ' + frame);
+            // Inscreve-se no tópico /topic/stats
+            stompClient.subscribe('/topic/stats', function(message){
+                var stats = JSON.parse(message.body);
+                // Atualiza a interface com as estatísticas recebidas
+                document.getElementById('stats').innerHTML =
+                    '<p class="stat">Número total de pesquisas: ' + stats.numSearches + '</p>' +
+                    '<p class="stat">Barrels ativos: ' + stats.activeBarrels + '</p>' +
+                    '<p class="stat">Tempo médio de resposta: ' + stats.averageResponseTime + ' ms</p>' +
+                    '<p class="stat">Top 10 Pesquisas: ' + stats.top10Searches.join(', ') + '</p>' +
+                    '<p class="stat">Tamanho dos índices: ' + JSON.stringify(stats.barrelIndexSizes) + '</p>';
+            });
+        }, function(error) {
+            console.error('Erro de conexão com WebSocket: ' + error);
+        });
+    </script>
+</body>
+</html>
