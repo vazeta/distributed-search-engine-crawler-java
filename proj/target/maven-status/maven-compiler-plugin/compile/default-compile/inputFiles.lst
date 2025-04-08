@@ -10,6 +10,7 @@
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/Statistics.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/com/example/googol/config/RMIConfig.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/URLQueue.java
+/home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/com/example/googol/controllers/StatisticsWebSocketController.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/ReliableMulticastService.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/Downloader.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/Gateway.java
@@ -18,8 +19,10 @@
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/URLQueueImpl.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/StatisticsClient.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/StorageUtil.java
+/home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/com/example/googol/config/RMIStatisticsConfig.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/ReliableMulticastClientImpl.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/com/example/googol/controllers/RelatedLinksController.java
+/home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/com/example/googol/config/WebSocketConfig.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/com/example/googol/ServingWebContentApplication.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/StatisticsClientImpl.java
 /home/joaodias/Secretária/LEI/3ANO/2 SEMESTRE/sd/SD_proj/proj/src/main/java/search/IBarrelGateway.java

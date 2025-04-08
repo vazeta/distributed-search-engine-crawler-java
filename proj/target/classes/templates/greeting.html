@@ -15,27 +15,24 @@
             font-weight: bold;
             margin-bottom: 30px;
         }
-        .search-form {
+        .search-form, .add-url-container, .related-links-container, .stats-container {
             max-width: 600px;
-            margin: 0 auto;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .add-url-container {
+        .add-url-container, .related-links-container, .stats-container {
             margin-top: 50px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .related-links-container {
-            margin-top: 20px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
         }
         .alert {
             margin-top: 20px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+        }
+        .stats-container {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        .toggle-btn {
+            margin-top: 10px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -51,50 +48,88 @@
                 </div>
             </form>
             
-            <!-- Alerta para mensagens -->
-            <div th:if="${message}" class="alert alert-info" role="alert" th:text="${message}"></div>
-            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            <!-- Alertas para mensagens -->
+            <div th:if="${message}" class="alert alert-info" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
         </div>
         
         <!-- Card para adicionar URL -->
-        <div class="add-url-container">
-            <div class="card">
-                <div class="card-header">
-                    Adicionar URL para indexação
-                </div>
-                <div class="card-body">
-                    <form action="/add-url" method="POST">
-                        <div class="input-group mb-3">
-                            <input type="url" class="form-control" name="url" placeholder="https://..." required>
-                            <button class="btn btn-outline-secondary" type="submit">Adicionar</button>
-                        </div>
-                    </form>
-                </div>
+        <div class="add-url-container card">
+            <div class="card-header">Adicionar URL para indexação</div>
+            <div class="card-body">
+                <form action="/add-url" method="POST">
+                    <div class="input-group mb-3">
+                        <input type="url" class="form-control" name="url" placeholder="https://..." required>
+                        <button class="btn btn-outline-secondary" type="submit">Adicionar</button>
+                    </div>
+                </form>
             </div>
         </div>
         
         <!-- Card para consultar links relacionados -->
-        <div class="related-links-container">
-            <div class="card">
-                <div class="card-header">
-                    Consultar Links Relacionados
-                </div>
-                <div class="card-body">
-                    <form action="/related-links" method="GET">
-                        <div class="input-group mb-3">
-                            <input type="url" class="form-control" name="link" placeholder="https://..." required>
-                            <button class="btn btn-outline-secondary" type="submit">Consultar</button>
-                        </div>
-                    </form>
+        <div class="related-links-container card">
+            <div class="card-header">Consultar Links Relacionados</div>
+            <div class="card-body">
+                <form action="/related-links" method="GET">
+                    <div class="input-group mb-3">
+                        <input type="url" class="form-control" name="link" placeholder="https://..." required>
+                        <button class="btn btn-outline-secondary" type="submit">Consultar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Card para estatísticas em tempo real -->
+        <div class="stats-container card" id="statsContainer">
+            <div class="card-header">
+                Estatísticas do Sistema
+                <!-- Botão para alternar visibilidade -->
+                <button class="btn btn-sm btn-outline-primary toggle-btn" onclick="toggleStats()">Mostrar Estatísticas</button>
+            </div>
+            <!-- O conteúdo inicia oculto -->
+            <div class="card-body" id="statsContent" style="display: none;">
+                <div id="stats">
+                    <p>Aguardando atualização...</p>
                 </div>
             </div>
         </div>
-
-        <!-- Botão para estatísticas -->
-        <div class="text-center mt-4">
-            <a href="/statistics" class="btn btn-outline-info">Ver Estatísticas do Sistema</a>
-        </div>
     </div>
+    
+    <!-- Dependências WebSocket: SockJS e STOMP -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+        
+        stompClient.connect({}, function(frame) {
+            console.log('Conectado: ' + frame);
+            stompClient.subscribe('/topic/stats', function(message) {
+                var stats = JSON.parse(message.body);
+                var statsHtml =
+                    '<p><strong>Número total de pesquisas:</strong> ' + stats.numSearches + '</p>' +
+                    '<p><strong>Barrels ativos:</strong> ' + stats.activeBarrels + '</p>' +
+                    '<p><strong>Tempo médio de resposta:</strong> ' + stats.averageResponseTime + ' ms</p>' +
+                    '<p><strong>Top 10 Pesquisas:</strong> ' + stats.top10Searches.join(', ') + '</p>' +
+                    '<p><strong>Tamanho dos índices:</strong> ' + JSON.stringify(stats.barrelIndexSizes) + '</p>';
+                document.getElementById('stats').innerHTML = statsHtml;
+            });
+        }, function(error) {
+            console.error('Erro na conexão com WebSocket: ' + error);
+        });
+        
+        function toggleStats() {
+            var statsContent = document.getElementById('statsContent');
+            var toggleBtn = document.querySelector('.toggle-btn');
+            if (statsContent.style.display === 'none') {
+                statsContent.style.display = 'block';
+                toggleBtn.textContent = 'Ocultar Estatísticas';
+            } else {
+                statsContent.style.display = 'none';
+                toggleBtn.textContent = 'Mostrar Estatísticas';
+            }
+        }
+    </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
