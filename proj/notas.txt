@@ -49,3 +49,5 @@ A FAZER:
 -> mais do que um cliente(ainda da meta 1)
 -> quando nao esta a ser processado o link ou seja quando os downloaders estao em baixo diz na mesma na mensagem que o link esta a ser processado
 -> a atualizacao de stats esta a ser feita com resurso a delay, neste momento 1 ms
+-> quando clico no botao para ir buscar a stories de hacker news fica naquela pagina até acabar a pesquisa, talvez seja melhor ir para a pagina inicial enquanto esse processo esta a acontecer
+-> openai é um boa palavra a pesquisar e para testar hackernews
