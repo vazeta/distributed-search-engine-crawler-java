@@ -105,7 +105,18 @@
     </form>
 </div>
 
-<h1>Resultados da pesquisa para: <span th:text="${query}">Pesquisa</span></h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1 style="margin: 0;">Resultados da pesquisa para: <span th:text="${query}">Pesquisa</span></h1>
+
+    <form action="/hn-index" method="post" style="margin: 0;">
+        <input type="hidden" name="query" th:value="${query}">
+        <button type="submit"
+                style="padding: 8px 16px; background-color: #ffc107; color: black; border: none; border-radius: 5px; cursor: pointer;">
+            Indexar Top Stories do Hacker News
+        </button>
+    </form>
+</div>
+
 
 <div th:if="${#lists.isEmpty(results)}">
     <p>Nenhum resultado encontrado.</p>

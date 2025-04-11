@@ -3,7 +3,11 @@ import java.rmi.RemoteException;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.example.googol.service.HackerNewsService;
+
 import org.springframework.ui.Model;
 
 import java.util.ArrayList;
@@ -80,6 +84,26 @@ public class SearchController {
         model.addAttribute("results", parsedResults);
         model.addAttribute("pages", pages);
         return "search_results";
+    }
+
+    @Autowired
+    private HackerNewsService hackerNewsService;
+
+    @PostMapping("/hn-index")
+    public String indexHackerNews(@RequestParam("query") String query, Model model) {
+        List<String> urls = hackerNewsService.fetchTopStoriesMatching(query);
+
+        for (String url : urls) {
+            try {
+                gateway.addUrlToQueue(url);
+            } catch (Exception e) {
+                System.out.println("Erro a enviar um dos links do hackerNews");
+            }
+            
+        }
+
+        model.addAttribute("message", urls.size() + " histórias do Hacker News enviadas para indexação.");
+        return "redirect:/?query=" + query;
     }
 
 }
