@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
 public class StorageUtil {
-    private static final String DATA_FOLDER = "..//data//";
+    private static final String DATA_FOLDER = "data/";
     private static final String CONFIG_FILE = "config.properties";
     public static void saveData(Object data, String fileName) {
         String filePath = DATA_FOLDER + fileName;

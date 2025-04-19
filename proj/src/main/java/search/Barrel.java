@@ -39,13 +39,25 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             System.out.println("Dados salvos com sucesso.");
         }));
     }
+
+    private void notifyStatisticsService() {
+        try {
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1100);
+            StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
+            System.out.println("Notificando StatisticsService sobre atualizacao do index.");
+            statsService.notifyIndexUpdate(this.barrelName, index.size());
+        } catch (Exception e) {
+            System.out.println("Error notifying statistics service: " + e.getMessage());
+        }
+    }
+    
     
     private void registerWithGateway() {
         try {
             Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
             IClientGateway gateway = (IClientGateway) registry.lookup("GatewayService");
             gateway.registerBarrel(this.barrelName, this);
-            System.out.println("Barrel registrado via Gateway.");
+            System.out.println("Barrel registrado via Gatewaysss.");
         } catch (Exception e) {
             System.err.println("Erro ao registrar o Barrel via Gateway:");
         }
@@ -53,6 +65,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     public synchronized void storeDataInIndex(String palavra, String infoAssociada) {
         index.computeIfAbsent(palavra, k -> new HashSet<>()).add(infoAssociada);
+        notifyStatisticsService();
     }
 
     @Override

@@ -4,7 +4,9 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public class StatisticsClientImpl extends UnicastRemoteObject implements StatisticsClient {
 
     private List<String> lastTop10Order = new ArrayList<>();

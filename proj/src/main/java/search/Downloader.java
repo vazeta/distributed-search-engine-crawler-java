@@ -28,7 +28,7 @@ public class Downloader {
     public static void main(String[] args) throws IOException {
         urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
         size_inicial = urlListFile.size();
-        carregarStopWords("lib/stopwords.txt");
+        carregarStopWords("data/stopwords.txt");
         try {
 
             Registry registry;

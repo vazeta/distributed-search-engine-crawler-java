@@ -46,7 +46,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
         return urlQueue.poll();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         try {
             Registry registry;
             try {

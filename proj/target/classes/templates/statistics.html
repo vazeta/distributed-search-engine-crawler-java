@@ -44,6 +44,8 @@
                     '<p class="stat">Top 10 Pesquisas: ' + stats.top10Searches.join(', ') + '</p>' +
                     '<p class="stat">Tamanho dos índices: ' + JSON.stringify(stats.barrelIndexSizes) + '</p>';
             });
+            console.log("Solicitando estatísticas iniciais...");
+            stompClient.send("/app/requestStats", {}, {});
         }, function(error) {
             console.error('Erro de conexão com WebSocket: ' + error);
         });

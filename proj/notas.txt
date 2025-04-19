@@ -28,17 +28,6 @@ _______________________________________META 2___________________________________
 
 -------------------------------------------------------------------------------------------------------------
 
-INTALACOES E COMO CORRES ISTO !!!!!!!!!!
-
-sudo apt install maven(so é preciso fazer 1 vez)
-
-COMO correr
-1. navegar ate proj
-2.tem de se correr a gateway primeiro para criar os servidores
-3. mvn spring-boot:run
-    o comando em cima corre o ficheiro /proj/src/main/java/com/example/googol/ServingWebContentApplication.java
-3. Abrir o browser 127.0.0.1/8080
-4. Se se quiser fazer pesquisas tem de se iniciar um barrel.
 
 DIAS, as 3 pastas que nos devemos focar nesta meta estao dentro de  src/main/java/com/example/googol
 os html alteram-se na pasta /src/main/resources/templates
@@ -46,8 +35,33 @@ temos um bug que se fizermos mvn install, o maven apaga o jsoup.jar e as stopwor
 PARA PERCEBER MELHOR HACKER NEWS API -> VER DOCUMENTACAO https://github.com/HackerNews/API
 
 A FAZER:
--> mais do que um cliente(ainda da meta 1)
 -> quando nao esta a ser processado o link ou seja quando os downloaders estao em baixo diz na mesma na mensagem que o link esta a ser processado
--> a atualizacao de stats esta a ser feita com resurso a delay, neste momento 1 ms
 -> quando clico no botao para ir buscar a stories de hacker news fica naquela pagina até acabar a pesquisa, talvez seja melhor ir para a pagina inicial enquanto esse processo esta a acontecer
 -> openai é um boa palavra a pesquisar e para testar hackernews
+
+
+----------------!!!!!!!!----------------------------ATENCAO-------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------!!!!!!!!!!!!!-----------------------------------------
+
+--------------------------------------------ATENCAO-------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+NOVOS COMANDOS E COMO CORRER ISTO:
+TODOS OS TERMINAIS ABRETOS EM SD_proj/proj/
+PARA COMPILAR CASO SEJA NECESSARIO -> mvn clean compile
+PARA CORRER :
+Gateway -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.Gateway
+queue -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.URLQueueImpl
+downloader -> java -cp target/classes:data/* search.Downloader
+barrel -> java -cp target/classes search.Barrel Barrel1
+
+NOTAS 
+-> OS FICHEIROS JSOUP E STOPWORDS FORAM MOVIDOS PARA DATA
+-> ALGUMAS COISAS ESTAO MEIAS ESTRANHS MAS É O QUE É DEPOSI TEMOS DE APERFEICOAR 
+-> AS STATS SAO AGORA CRIADAS NUMA PORTA NOVA -> 1100 
+
+
+
+----------------!!!!!!!!----------------------------ATENCAO-------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------ATENCAO-------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------!!!!!!!!-----------------------------------------

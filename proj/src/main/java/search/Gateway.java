@@ -231,7 +231,8 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         stats.setBarrelIndexSizes(barrelIndexSizes);
 
         try {
-            StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
+            Registry registry1 = LocateRegistry.getRegistry(StorageUtil.getIP(),1100);
+            StatisticsService statsService = (StatisticsService) registry1.lookup("StatisticsService");
             statsService.notifyStats(stats);
         } catch (Exception e) {
             System.out.println("Erro no acesso e notificacao de novas estatisticas.");
@@ -258,13 +259,9 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         return top10;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         try {
             new Gateway();
-            StatisticsServiceImpl statsService = new StatisticsServiceImpl();
-            Registry registry = LocateRegistry.getRegistry(1099);
-            registry.rebind("StatisticsService", statsService);
-            System.out.println("Serviço de Estatísticas registrado com sucesso.");
         } catch (RemoteException e) {
             System.out.println("Erro na criacao de gateway.");
         }
