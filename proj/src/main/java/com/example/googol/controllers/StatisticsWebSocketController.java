@@ -33,7 +33,6 @@ public class StatisticsWebSocketController {
         if (stats == null) {
             System.out.println("opa");
         } else {
-            System.out.println("n esta a null11");
             messagingTemplate.convertAndSend("/topic/stats", stats);
         }
     }

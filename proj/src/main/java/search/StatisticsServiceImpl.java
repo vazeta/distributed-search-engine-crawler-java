@@ -56,7 +56,6 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
 
         // Only send updates if something changed
         if (updated && wsController != null) {
-            System.out.println("Sending barrel index update for " + barrelName + ": " + indexSize);
             wsController.sendStats(currentStats);
         }
     }
@@ -118,9 +117,6 @@ public class StatisticsServiceImpl extends UnicastRemoteObject implements Statis
         if (avgRespTimeChanged) {
             lastAvgResponseTime = newStats.getAverageResponseTime();
         }
-        System.out.println("Top10 mudou? " + top10Changed);
-        System.out.println("Tempo médio de resposta mudou? " + avgRespTimeChanged);
-
         return top10Changed || avgRespTimeChanged;
     }
 
