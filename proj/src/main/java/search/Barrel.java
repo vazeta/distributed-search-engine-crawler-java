@@ -44,7 +44,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         try {
             Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1100);
             StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
-            System.out.println("Notificando StatisticsService sobre atualizacao do index.");
             statsService.notifyIndexUpdate(this.barrelName, index.size());
         } catch (Exception e) {
             System.out.println("Error notifying statistics service: " + e.getMessage());
@@ -57,7 +56,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
             IClientGateway gateway = (IClientGateway) registry.lookup("GatewayService");
             gateway.registerBarrel(this.barrelName, this);
-            System.out.println("Barrel registrado via Gatewaysss.");
+            System.out.println("Barrel registrado via Gateway.");
         } catch (Exception e) {
             System.err.println("Erro ao registrar o Barrel via Gateway:");
         }

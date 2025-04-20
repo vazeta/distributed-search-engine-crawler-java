@@ -53,6 +53,7 @@ Gateway -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search
 queue -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.URLQueueImpl
 downloader -> java -cp target/classes:data/* search.Downloader
 barrel -> java -cp target/classes search.Barrel Barrel1
+correr -> mvn spring-boot:run
 
 NOTAS 
 -> OS FICHEIROS JSOUP E STOPWORDS FORAM MOVIDOS PARA DATA
