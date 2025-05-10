@@ -76,4 +76,16 @@ public class StorageUtil {
         }
     }
 
+    public static String getkey() {
+        String filePath = DATA_FOLDER + CONFIG_FILE;
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            properties.load(fis);
+            return properties.getProperty("openai_key", "0");
+        } catch (IOException e) {
+            System.err.println("Erro ao carregar o ficheiro de configuração: " + e.getMessage());
+            return "0";
+        }
+    }
+
 }

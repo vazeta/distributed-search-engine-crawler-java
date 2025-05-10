@@ -1,4 +1,5 @@
 package com.example.googol.controllers;
+
 import java.rmi.RemoteException;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.googol.service.HackerNewsService;
+import com.example.googol.service.OpenAIAnalysisService;
 
 import org.springframework.ui.Model;
 
@@ -42,29 +44,34 @@ public class SearchController {
 
     @Autowired
     private IClientGateway gateway;
+    @Autowired
+    private OpenAIAnalysisService openAIAnalysisService;
 
     @GetMapping("/search")
-    public String search(@RequestParam("query") String query,@RequestParam(value = "page", defaultValue = "1")int page, Model model) throws RemoteException {
+    public String search(@RequestParam("query") String query,
+            @RequestParam(value = "page", defaultValue = "1") int page, Model model) throws RemoteException {
         List<String> results = gateway.request_index(query, page);
 
         List<SearchResult> parsedResults = new ArrayList<>();
-        int pages=0;
+        int pages = 0;
 
         for (String result : results) {
             if (result.contains("URL:") && result.contains("Titulo:") && result.contains("Citacao:")) {
                 try {
                     String[] urlSplit = result.split("URL: ");
-                    String[] tituloSplit = urlSplit.length > 1 ? urlSplit[1].split(" Titulo: ") : new String[] {"", ""};
-                    String[] citacaoSplit = tituloSplit.length > 1 ? tituloSplit[1].split(" Citacao: ") : new String[] {"", ""};
-        
+                    String[] tituloSplit = urlSplit.length > 1 ? urlSplit[1].split(" Titulo: ")
+                            : new String[] { "", "" };
+                    String[] citacaoSplit = tituloSplit.length > 1 ? tituloSplit[1].split(" Citacao: ")
+                            : new String[] { "", "" };
+
                     String link = tituloSplit[0].trim();
                     String titulo = citacaoSplit.length > 0 ? citacaoSplit[0].trim() : "";
                     String citacao = citacaoSplit.length > 1 ? citacaoSplit[1].trim() : "";
-        
+
                     if (titulo.isEmpty()) {
                         titulo = link;
                     }
-        
+
                     parsedResults.add(new SearchResult(link, titulo, citacao));
                 } catch (Exception e) {
                     System.err.println("Erro ao processar resultado: " + result);
@@ -77,11 +84,28 @@ public class SearchController {
                 }
             }
         }
-        
-        
+
+        // Extrair as citações dos resultados
+        List<String> citacoes = new ArrayList<>();
+        for (SearchResult sr : parsedResults) {
+            if (!sr.getCitacao().isEmpty()) {
+                citacoes.add(sr.getCitacao());
+            }
+        }
+
+        // Gerar a análise textual com base na query e nas citações
+        String analise = "";
+        try {
+            analise = openAIAnalysisService.generateAnalysis(query, citacoes);
+        } catch (Exception e) {
+            analise = "Não foi possível gerar a análise desta pesquisa.";
+            System.err.println("Erro ao gerar análise com OpenAI: " + e.getMessage());
+        }
+
         model.addAttribute("currentPage", page);
         model.addAttribute("query", query);
         model.addAttribute("results", parsedResults);
+        model.addAttribute("analise", analise);
         model.addAttribute("pages", pages);
         return "search_results";
     }
@@ -99,7 +123,7 @@ public class SearchController {
             } catch (Exception e) {
                 System.out.println("Erro a enviar um dos links do hackerNews");
             }
-            
+
         }
 
         model.addAttribute("message", urls.size() + " histórias do Hacker News enviadas para indexação.");

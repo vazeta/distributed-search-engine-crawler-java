@@ -4,11 +4,10 @@
     <title>Resultados da pesquisa</title>
     <style>
         body {
-            font-family: Arial, Helvetica, sans-serif, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             padding: 20px;
         }
 
-        /* Topo com logotipo e barra de pesquisa */
         .top-bar {
             display: flex;
             align-items: center;
@@ -91,11 +90,27 @@
             font-weight: bold;
             text-decoration: underline;
         }
+
+        .analise-ia {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f1f3f4;
+            border-left: 5px solid #1a0dab;
+        }
+
+        .analise-ia h2 {
+            margin-top: 0;
+            color: #1a0dab;
+        }
+
+        .analise-ia p {
+            font-size: 16px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
 
-<!-- Topo com logotipo e barra de pesquisa -->
 <div class="top-bar">
     <a href="/" class="logo">Googol</a>
 
@@ -117,6 +132,11 @@
     </form>
 </div>
 
+<!-- Secção de Análise com IA -->
+<div class="analise-ia" th:if="${analise}">
+    <h2>Análise com IA</h2>
+    <p th:text="${analise}"></p>
+</div>
 
 <div th:if="${#lists.isEmpty(results)}">
     <p>Nenhum resultado encontrado.</p>
