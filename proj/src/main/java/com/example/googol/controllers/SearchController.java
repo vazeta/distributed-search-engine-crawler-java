@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import com.example.googol.service.HackerNewsService;
-import com.example.googol.service.OpenAIAnalysisService;
+import com.example.googol.service.OllamaAnalysisService;
 
 import org.springframework.ui.Model;
 
@@ -44,8 +43,9 @@ public class SearchController {
 
     @Autowired
     private IClientGateway gateway;
+
     @Autowired
-    private OpenAIAnalysisService openAIAnalysisService;
+    private OllamaAnalysisService ollamaAnalysisService;
 
     @GetMapping("/search")
     public String search(@RequestParam("query") String query,
@@ -85,27 +85,21 @@ public class SearchController {
             }
         }
 
-        // Extrair as citações dos resultados
-        List<String> citacoes = new ArrayList<>();
-        for (SearchResult sr : parsedResults) {
-            if (!sr.getCitacao().isEmpty()) {
-                citacoes.add(sr.getCitacao());
-            }
-        }
-
-        // Gerar a análise textual com base na query e nas citações
-        String analise = "";
         try {
-            analise = openAIAnalysisService.generateAnalysis(query, citacoes);
+            List<String> snippets = parsedResults.stream()
+                    .map(SearchResult::getCitacao)
+                    .filter(c -> c != null && !c.isBlank())
+                    .toList();
+
+            String analysis = ollamaAnalysisService.generateAnalysis(query, snippets);
+            model.addAttribute("analise", analysis);
         } catch (Exception e) {
-            analise = "Não foi possível gerar a análise desta pesquisa.";
-            System.err.println("Erro ao gerar análise com OpenAI: " + e.getMessage());
+            model.addAttribute("analise", "Erro ao gerar análise com Ollama: " + e.getMessage());
         }
 
         model.addAttribute("currentPage", page);
         model.addAttribute("query", query);
         model.addAttribute("results", parsedResults);
-        model.addAttribute("analise", analise);
         model.addAttribute("pages", pages);
         return "search_results";
     }
