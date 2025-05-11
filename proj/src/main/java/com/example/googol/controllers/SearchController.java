@@ -89,6 +89,7 @@ public class SearchController {
             List<String> snippets = parsedResults.stream()
                     .map(SearchResult::getCitacao)
                     .filter(c -> c != null && !c.isBlank())
+                    .limit(15)
                     .toList();
 
             String analysis = ollamaAnalysisService.generateAnalysis(query, snippets);

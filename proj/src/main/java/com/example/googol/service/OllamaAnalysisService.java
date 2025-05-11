@@ -46,7 +46,7 @@ public class OllamaAnalysisService {
         for (String snippet : snippets) {
             sb.append("- ").append(snippet).append("\n");
         }
-        sb.append("Gere uma análise textual baseada nos termos e nos resultados acima.");
+        sb.append("Gere um texto pequeno para um browser em portugues baseada nos termos e nos resultados acima. Nao inclua esta informacao na sua resposta.");
         return sb.toString();
     }
 }

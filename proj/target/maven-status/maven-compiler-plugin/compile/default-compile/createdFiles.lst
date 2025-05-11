@@ -28,6 +28,7 @@ search/StatisticsService.class
 search/Gateway.class
 search/StorageUtil.class
 search/ReliableMulticastService.class
+com/example/googol/service/OllamaAnalysisService.class
 search/Downloader.class
 search/IntClient.class
 search/Barrel.class
