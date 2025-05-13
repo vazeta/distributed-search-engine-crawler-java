@@ -101,11 +101,32 @@
         .analise-ia h2 {
             margin-top: 0;
             color: #1a0dab;
+            display: flex;
+            align-items: center;
         }
 
         .analise-ia p {
             font-size: 16px;
             color: #333;
+        }
+        
+        .analise-ia .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(26, 13, 171, 0.3);
+            border-radius: 50%;
+            border-top-color: #1a0dab;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -132,10 +153,13 @@
     </form>
 </div>
 
-<!-- Secção de Análise com IA -->
-<div class="analise-ia" th:if="${analise}">
-    <h2>Análise com IA</h2>
-    <p th:text="${analise}"></p>
+<!-- Secção de Análise com IA - Atualizada com WebSocket -->
+<div class="analise-ia">
+    <h2>
+        Análise com IA
+        <div id="analysisLoader" class="loading"></div>
+    </h2>
+    <p id="analysisContent">A IA está analisando os resultados da sua pesquisa...</p>
 </div>
 
 <div th:if="${#lists.isEmpty(results)}">
@@ -156,6 +180,38 @@
         <span th:if="${i == currentPage}" th:text="${i}" class="pagina-ativa"></span>
     </span>
 </div>
+
+<!-- Scripts para WebSocket -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:inline="javascript">
+    // Obter ID da query do modelo Thymeleaf
+    var queryId = /*[[${queryId}]]*/ '';
+    
+    var socket = new SockJS('/ws');
+    var stompClient = Stomp.over(socket);
+    
+    stompClient.connect({}, function(frame) {
+        console.log('Conectado: ' + frame);
+        
+        // Inscreva-se no tópico específico para esta pesquisa
+        stompClient.subscribe('/topic/analysis/' + queryId, function(response) {
+            var analysisText = response.body;
+            
+            // Atualiza o conteúdo da análise
+            document.getElementById('analysisContent').textContent = analysisText;
+            
+            // Se a análise estiver completa (não for uma mensagem de "carregando"), oculta o indicador de carregamento
+            if (!analysisText.includes("Analisando resultados...") && !analysisText.includes("aguarde")) {
+                document.getElementById('analysisLoader').classList.add('hidden');
+            }
+        });
+    }, function(error) {
+        console.error('Erro na conexão WebSocket: ' + error);
+        document.getElementById('analysisContent').textContent = 'Não foi possível conectar ao serviço de análise.';
+        document.getElementById('analysisLoader').classList.add('hidden');
+    });
+</script>
 
 </body>
 </html>

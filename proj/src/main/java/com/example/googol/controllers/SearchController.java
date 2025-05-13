@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.googol.service.HackerNewsService;
 import com.example.googol.service.OllamaAnalysisService;
 
@@ -13,6 +14,7 @@ import org.springframework.ui.Model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import search.*;
 
 @Controller
@@ -46,6 +48,9 @@ public class SearchController {
 
     @Autowired
     private OllamaAnalysisService ollamaAnalysisService;
+    
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/search")
     public String search(@RequestParam("query") String query,
@@ -85,23 +90,25 @@ public class SearchController {
             }
         }
 
-        try {
-            List<String> snippets = parsedResults.stream()
-                    .map(SearchResult::getCitacao)
-                    .filter(c -> c != null && !c.isBlank())
-                    .limit(15)
-                    .toList();
-
-            String analysis = ollamaAnalysisService.generateAnalysis(query, snippets);
-            model.addAttribute("analise", analysis);
-        } catch (Exception e) {
-            model.addAttribute("analise", "Erro ao gerar análise com Ollama: " + e.getMessage());
-        }
-
+        // Configuramos o usuário inicialmente sem análise
+        model.addAttribute("analise", ""); 
+        model.addAttribute("queryId", query.hashCode() + "-" + System.currentTimeMillis());
         model.addAttribute("currentPage", page);
         model.addAttribute("query", query);
         model.addAttribute("results", parsedResults);
         model.addAttribute("pages", pages);
+
+        // Processamento assíncrono da análise Ollama - usando streaming
+        List<String> snippets = parsedResults.stream()
+            .map(SearchResult::getCitacao)
+            .filter(c -> c != null && !c.isBlank())
+            .limit(15)
+            .toList();
+            
+        // Iniciar análise streaming de forma assíncrona
+        ollamaAnalysisService.generateAnalysisStreaming(query, snippets, 
+            query.hashCode() + "-" + System.currentTimeMillis());
+
         return "search_results";
     }
 
@@ -118,11 +125,9 @@ public class SearchController {
             } catch (Exception e) {
                 System.out.println("Erro a enviar um dos links do hackerNews");
             }
-
         }
 
         model.addAttribute("message", urls.size() + " histórias do Hacker News enviadas para indexação.");
         return "redirect:/?query=" + query;
     }
-
 }
