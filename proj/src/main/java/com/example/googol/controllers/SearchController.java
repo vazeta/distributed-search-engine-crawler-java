@@ -119,17 +119,7 @@ public class SearchController {
 
     @PostMapping("/hn-index")
     public String indexHackerNews(@RequestParam("query") String query, Model model) {
-        List<String> urls = hackerNewsService.fetchTopStoriesMatching(query);
-
-        for (String url : urls) {
-            try {
-                gateway.addUrlToQueue(url);
-            } catch (Exception e) {
-                System.out.println("Erro a enviar um dos links do hackerNews");
-            }
-        }
-
-        model.addAttribute("message", urls.size() + " histórias do Hacker News enviadas para indexação.");
-        return "redirect:/?query=" + query;
+        hackerNewsService.fetchTopStoriesMatching(query);
+        return "redirect:/";
     }
 }

@@ -1,8 +1,12 @@
 // src/main/java/com/example/googol/service/HackerNewsService.java
 package com.example.googol.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import search.IClientGateway;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +15,19 @@ import java.util.Map;
 @Service
 public class HackerNewsService {
 
+    @Autowired
+    private IClientGateway gateway;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String BASE_URL = "https://hacker-news.firebaseio.com/v0/";
-
-    public List<String> fetchTopStoriesMatching(String query) {
+    @Async
+    public void fetchTopStoriesMatching(String query) {
         String[] terms = query.toLowerCase().split("\\s+");
         List<String> matchedUrls = new ArrayList<>();
 
         String[] storyIds = restTemplate.getForObject(BASE_URL + "topstories.json", String[].class);
 
-        if (storyIds == null) return matchedUrls;
+        if (storyIds == null) return;
 
         for (int i = 0; i < Math.min(storyIds.length, 10000); i++) {
             String id = storyIds[i];
@@ -40,7 +47,14 @@ public class HackerNewsService {
                 matchedUrls.add(story.get("url").toString());
             }
         }
-        System.out.println(matchedUrls.size()+"dmakmdaksdk" + "-"+query);
-        return matchedUrls;
+        System.out.println(matchedUrls.size()+" links vindos da query" + "-"+query);
+        for(String url:matchedUrls){
+            try {
+                gateway.addUrlToQueue(url);
+            } catch (Exception e) {
+                System.out.println("Erro no hacker news a adicionar a queue");
+            }
+            
+        }
     }
 }

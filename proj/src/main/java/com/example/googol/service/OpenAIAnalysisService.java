@@ -8,13 +8,15 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import search.StorageUtil;
+
 @Service
 public class OpenAIAnalysisService {
 
     private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
     
-    private String apiKey = "";
+    private String apiKey = StorageUtil.getkey();
 
     private final SimpMessagingTemplate messagingTemplate;
 
