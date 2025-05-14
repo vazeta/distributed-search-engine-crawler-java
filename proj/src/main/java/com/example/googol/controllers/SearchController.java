@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.googol.service.HackerNewsService;
-import com.example.googol.service.OllamaAnalysisService;
+import com.example.googol.service.OpenAIAnalysisService;
 
 import org.springframework.ui.Model;
 
@@ -46,8 +46,10 @@ public class SearchController {
     @Autowired
     private IClientGateway gateway;
 
+   // import com.example.googol.service.OpenAIAnalysisService;
     @Autowired
-    private OllamaAnalysisService ollamaAnalysisService;
+    private OpenAIAnalysisService analysisService;
+
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -106,7 +108,7 @@ public class SearchController {
             .toList();
             
         // Iniciar análise streaming de forma assíncrona
-        ollamaAnalysisService.generateAnalysisStreaming(query, snippets, 
+        analysisService.generateAnalysisStreaming(query, snippets, 
             query.hashCode() + "-" + System.currentTimeMillis());
 
         return "search_results";
