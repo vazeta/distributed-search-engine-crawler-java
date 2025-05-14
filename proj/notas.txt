@@ -49,10 +49,10 @@ NOVOS COMANDOS E COMO CORRER ISTO:
 TODOS OS TERMINAIS ABERTOS EM SD_proj/proj/
 PARA CORRER :
 mvn clean compile
-Gateway -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.Gateway
-queue -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.URLQueueImpl
-downloader -> java -cp target/classes:data/* search.Downloader
-barrel -> java -cp target/classes search.Barrel Barrel1
+Gateway -> mvn exec:java -Dexec.mainClass="search.Gateway"
+queue -> mvn exec:java -Dexec.mainClass="search.URLQueueImpl"
+downloader -> mvn exec:java -Dexec.mainClass="search.Downloader"
+barrel -> mvn exec:java -Dexec.mainClass="search.Barrel" -Dexec.args="Barrel1"
 ollama -> ollama run llama3
 correr -> mvn spring-boot:run
 

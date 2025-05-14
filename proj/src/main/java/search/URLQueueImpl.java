@@ -47,6 +47,7 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        System.setProperty("java.rmi.server.hostname", StorageUtil.getIP());
         try {
             Registry registry;
             try {
@@ -61,7 +62,11 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
             URLQueueImpl queue = new URLQueueImpl();
             registry.rebind("URLQueue", queue);
             System.out.println("Fila de URLs pronta para uso!");
-
+            try {
+                Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (RemoteException e) {
             System.out.println("Erro na criacao da Queue.");
         }

@@ -16,7 +16,6 @@ com/example/googol/controllers/HomeController.class
 com/example/googol/controllers/SearchController$SearchResult.class
 com/example/googol/config/StatisticsServiceConfigurator.class
 search/StatisticsClient.class
-com/example/googol/config/PostConstruct.class
 search/StatisticsClientImpl.class
 com/example/googol/controllers/RelatedLinksController.class
 search/IClientGateway.class

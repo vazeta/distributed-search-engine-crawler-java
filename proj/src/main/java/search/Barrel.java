@@ -164,5 +164,10 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         } catch (RemoteException e) {
             System.out.println("Erro na criacao do Barrel.");
         }
+        try {
+            Thread.sleep(Long.MAX_VALUE);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

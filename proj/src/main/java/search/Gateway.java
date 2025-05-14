@@ -32,7 +32,7 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
         loadSearchCounts();
     }
 
-    private static final String SEARCH_DATA_FILE = "..//data//procuras.obj";
+    private static final String SEARCH_DATA_FILE = "data//procuras.obj";
 
     private void loadSearchCounts() {
         File file = new File(SEARCH_DATA_FILE);
@@ -261,7 +261,14 @@ public class Gateway extends UnicastRemoteObject implements IClientGateway {
 
     public static void main(String[] args) throws InterruptedException {
         try {
+            System.setProperty("java.rmi.server.hostname", StorageUtil.getIP());
+            System.out.println("Hostname RMI definido como: " + StorageUtil.getIP());
             new Gateway();
+            try {
+                Thread.sleep(Long.MAX_VALUE);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (RemoteException e) {
             System.out.println("Erro na criacao de gateway.");
         }
