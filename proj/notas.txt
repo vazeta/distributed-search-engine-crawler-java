@@ -46,19 +46,23 @@ A FAZER:
 --------------------------------------------ATENCAO-------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------
 NOVOS COMANDOS E COMO CORRER ISTO:
-TODOS OS TERMINAIS ABRETOS EM SD_proj/proj/
-PARA COMPILAR CASO SEJA NECESSARIO -> mvn clean compile
+TODOS OS TERMINAIS ABERTOS EM SD_proj/proj/
 PARA CORRER :
+mvn clean compile
 Gateway -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.Gateway
 queue -> java -Djava.rmi.server.hostname="127.0.0.1" -cp target/classes search.URLQueueImpl
 downloader -> java -cp target/classes:data/* search.Downloader
 barrel -> java -cp target/classes search.Barrel Barrel1
+ollama -> ollama run llama3
 correr -> mvn spring-boot:run
 
 NOTAS 
 -> OS FICHEIROS JSOUP E STOPWORDS FORAM MOVIDOS PARA DATA
--> ALGUMAS COISAS ESTAO MEIAS ESTRANHS MAS É O QUE É DEPOSI TEMOS DE APERFEICOAR 
--> AS STATS SAO AGORA CRIADAS NUMA PORTA NOVA -> 1100 
+
+A FAZER 
+
+-> MUITO LENTO A IR AS APIS
+-> IP HARDCODED NOS COMANDOS ACIMA
 
 
 
