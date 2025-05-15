@@ -18,8 +18,7 @@ public class HackerNewsService {
 
     @Autowired
     private IClientGateway gateway;
-    private final ExecutorService executor = Executors.newFixedThreadPool(20); // ajusta conforme os recursos
-                                                                               // disponíveis
+    private final ExecutorService executor = Executors.newFixedThreadPool(20); 
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String BASE_URL = "https://hacker-news.firebaseio.com/v0/";
 
@@ -34,7 +33,7 @@ public class HackerNewsService {
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        for (int i = 0; i < Math.min(storyIds.length, 5000); i++) { // 10000 é um exagero
+        for (int i = 0; i < Math.min(storyIds.length, 5000); i++) {
             String id = storyIds[i];
             futures.add(CompletableFuture.runAsync(() -> {
                 try {
@@ -57,7 +56,6 @@ public class HackerNewsService {
             }, executor));
         }
 
-        // Espera por todas as tarefas
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         System.out.println(matchedUrls.size() + " links vindos da query - " + query);
