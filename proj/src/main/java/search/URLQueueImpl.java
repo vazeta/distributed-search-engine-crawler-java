@@ -34,7 +34,6 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
 
     @Override
     public synchronized String getNextURL() throws RemoteException {
-        System.out.println("estado da fila" + urlQueue);
         while (urlQueue.isEmpty()) {
             return null;
         }

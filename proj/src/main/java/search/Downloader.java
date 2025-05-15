@@ -89,13 +89,12 @@ public class Downloader {
         public void run() {
             while (running) {
                 try {
-                    System.out.println(Thread.currentThread().getName() + " tentando buscar URL...");
                     String url = queue.getNextURL();
                     if (url != null) {
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
                         processarPagina(url, queue);
                     }else{
-                        Thread.sleep(100);
+                        Thread.sleep(1000);
                         continue;
                     }
                 } catch (Exception e) {
