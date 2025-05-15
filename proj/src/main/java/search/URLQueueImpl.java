@@ -34,14 +34,9 @@ public class URLQueueImpl extends UnicastRemoteObject implements URLQueue {
 
     @Override
     public synchronized String getNextURL() throws RemoteException {
+        System.out.println("estado da fila" + urlQueue);
         while (urlQueue.isEmpty()) {
-            try {
-                System.out.println("Downloader esperando por URLs...");
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return null;
-            }
+            return null;
         }
         return urlQueue.poll();
     }

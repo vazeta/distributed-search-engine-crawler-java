@@ -24,10 +24,12 @@ public class Downloader {
     private static HashSet<String> urlListFile;
     private static ReliableMulticastService multicastService1;
     private static int size_inicial;
+    private static volatile boolean running = true;
 
     public static void main(String[] args) throws IOException {
         urlListFile = StorageUtil.loadData("ListaUrls.obj", new HashSet<>());
         size_inicial = urlListFile.size();
+        List<Thread> threads = new ArrayList<>();
         carregarStopWords("data/stopwords.txt");
         try {
 
@@ -56,7 +58,9 @@ public class Downloader {
 
             int numDownloaders = 5;
             for (int i = 0; i < numDownloaders; i++) {
-                new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1)).start();
+                Thread t = new Thread(new DownloaderTask(queue), "Downloader-" + (i + 1));
+                t.start();
+                threads.add(t);
             }
 
         } catch (Exception e) {
@@ -64,6 +68,12 @@ public class Downloader {
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Ctrl+C detectado! Salvando estado antes de sair...");
+            running = false;
+            for (Thread t : threads) {
+                System.out.println("Interrompendo thread: " + t.getName());
+                t.interrupt();
+            }
+            
             Guardar(size_inicial);
         }));
     }
@@ -77,20 +87,24 @@ public class Downloader {
 
         @Override
         public void run() {
-            while (true) {
+            while (running) {
                 try {
+                    System.out.println(Thread.currentThread().getName() + " tentando buscar URL...");
                     String url = queue.getNextURL();
                     if (url != null) {
                         System.out.println(Thread.currentThread().getName() + " processando: " + url);
                         processarPagina(url, queue);
-
+                    }else{
+                        Thread.sleep(100);
+                        continue;
                     }
-
                 } catch (Exception e) {
-                    System.out.println("Erro na busca de um novo URL.");
+                    System.out.println(Thread.currentThread().getName() + " erro ao buscar nova URL: " + e.getMessage());
                 }
             }
+            System.out.println(Thread.currentThread().getName() + " encerrado.");
         }
+
     }
 
     private static void processarPagina(String url, URLQueue queue) {
