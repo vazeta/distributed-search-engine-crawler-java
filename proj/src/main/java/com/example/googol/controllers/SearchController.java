@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.googol.service.HackerNewsService;
 import com.example.googol.service.OpenAIAnalysisService;
 
@@ -14,7 +13,6 @@ import org.springframework.ui.Model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import search.*;
 
 @Controller
@@ -46,13 +44,10 @@ public class SearchController {
     @Autowired
     private IClientGateway gateway;
 
-   // import com.example.googol.service.OpenAIAnalysisService;
     @Autowired
     private OpenAIAnalysisService analysisService;
 
     
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/search")
     public String search(@RequestParam("query") String query,
