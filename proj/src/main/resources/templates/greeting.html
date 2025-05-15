@@ -1,200 +1,174 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Googol - Motor de Busca</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      .search-container {
-        margin-top: 150px;
-        text-align: center;
-      }
-      .logo {
-        font-size: 72px;
-        font-weight: bold;
-        margin-bottom: 30px;
-      }
-      .search-form,
-      .add-url-container,
-      .related-links-container,
-      .stats-container {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .add-url-container,
-      .related-links-container,
-      .stats-container {
-        margin-top: 50px;
-      }
-      .alert {
-        margin-top: 20px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .stats-container {
-        border: 1px solid #ccc;
-        border-radius: 10px;
-      }
-      .toggle-btn {
-        margin-top: 10px;
-        display: inline-block;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="search-container">
-        <div class="logo">Googol</div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Googol - Motor de Busca</title>
 
-        <form class="search-form" action="/search" method="GET">
-          <div class="input-group mb-3">
-            <input
-              type="text"
-              class="form-control"
-              name="query"
-              placeholder="Pesquisar..."
-              required
-            />
-            <button class="btn btn-primary" type="submit">Buscar</button>
-          </div>
-        </form>
+  <!-- Bootstrap CSS e Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-        <!-- Alertas para mensagens -->
-        <div
-          th:if="${message}"
-          class="alert alert-info"
-          th:text="${message}"
-        ></div>
-        <div
-          th:if="${error}"
-          class="alert alert-danger"
-          th:text="${error}"
-        ></div>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .search-container {
+      margin-top: 150px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 72px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .search-form,
+    .add-url-container,
+    .related-links-container,
+    .stats-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .add-url-container,
+    .related-links-container,
+    .stats-container {
+      margin-top: 50px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .card-header {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1a0dab;
+      margin-bottom: 15px;
+    }
+
+    .alert {
+      margin-top: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .toggle-btn {
+      margin-top: 10px;
+    }
+
+    .stats-container p {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo estilizado -->
+    <div class="search-container">
+      <div class="logo">
+        <span style="color:#4285F4">G</span>
+        <span style="color:#EA4335">o</span>
+        <span style="color:#FBBC05">o</span>
+        <span style="color:#4285F4">g</span>
+        <span style="color:#34A853">o</span>
+        <span style="color:#EA4335">l</span>
       </div>
 
-      <!-- Card para adicionar URL -->
-      <div class="add-url-container card">
-        <div class="card-header">Adicionar URL para indexação</div>
-        <div class="card-body">
-          <form action="/add-url" method="POST">
-            <div class="input-group mb-3">
-              <input
-                type="url"
-                class="form-control"
-                name="url"
-                placeholder="https://..."
-                required
-              />
-              <button class="btn btn-outline-secondary" type="submit">
-                Adicionar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Card para consultar links relacionados -->
-      <div class="related-links-container card">
-        <div class="card-header">Consultar Links Relacionados</div>
-        <div class="card-body">
-          <form action="/related-links" method="GET">
-            <div class="input-group mb-3">
-              <input
-                type="url"
-                class="form-control"
-                name="link"
-                placeholder="https://..."
-                required
-              />
-              <button class="btn btn-outline-secondary" type="submit">
-                Consultar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Card para estatísticas em tempo real -->
-      <!-- Card para estatísticas em tempo real -->
-      <div class="stats-container card" id="statsContainer">
-        <div
-          class="card-header d-flex justify-content-between align-items-center"
-        >
-          <span>Estatísticas do Sistema</span>
-          <button
-            class="btn btn-sm btn-outline-primary toggle-btn"
-            onclick="toggleStats()"
-          >
-            Mostrar Estatísticas
+      <!-- Formulário com ícone de lupa -->
+      <form class="search-form" action="/search" method="GET">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" name="query" placeholder="Pesquisar..." required />
+          <button class="btn btn-primary" type="submit" title="Pesquisar">
+            <i class="bi bi-search"></i>
           </button>
         </div>
-        <!-- O conteúdo inicia oculto -->
-        <div class="card-body" id="statsContent" style="display: none">
-          <div id="stats">
-            <p>Aguardando atualização...</p>
-          </div>
+      </form>
+
+      <div th:if="${message}" class="alert alert-info" th:text="${message}"></div>
+      <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    </div>
+
+    <!-- Adicionar URL -->
+    <div class="add-url-container">
+      <div class="card-header">Adicionar URL para indexação</div>
+      <form action="/add-url" method="POST">
+        <div class="input-group mb-3">
+          <input type="url" class="form-control" name="url" placeholder="https://..." required />
+          <button class="btn btn-outline-secondary" type="submit">Adicionar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Consultar Links Relacionados -->
+    <div class="related-links-container">
+      <div class="card-header">Consultar Links Relacionados</div>
+      <form action="/related-links" method="GET">
+        <div class="input-group mb-3">
+          <input type="url" class="form-control" name="link" placeholder="https://..." required />
+          <button class="btn btn-outline-secondary" type="submit">Consultar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-container" id="statsContainer">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="card-header mb-0">Estatísticas do Sistema</div>
+        <button class="btn btn-sm btn-outline-primary toggle-btn" onclick="toggleStats()">Mostrar Estatísticas</button>
+      </div>
+      <div class="card-body" id="statsContent" style="display: none;">
+        <div id="stats">
+          <p>Aguardando atualização...</p>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Dependências WebSocket: SockJS e STOMP -->
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <script>
-      var socket = new SockJS("/ws");
-      var stompClient = Stomp.over(socket);
+  <!-- WebSocket -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <script>
+    var socket = new SockJS("/ws");
+    var stompClient = Stomp.over(socket);
 
-      stompClient.connect(
-        {},
-        function (frame) {
-          console.log("Conectado: " + frame);
-          stompClient.subscribe("/topic/stats", function (message) {
-            var stats = JSON.parse(message.body);
-            var statsHtml =
-              "<p><strong>Número total de pesquisas:</strong> " +
-              stats.numSearches +
-              "</p>" +
-              "<p><strong>Barrels ativos:</strong> " +
-              stats.activeBarrels +
-              "</p>" +
-              "<p><strong>Tempo médio de resposta:</strong> " +
-              stats.averageResponseTime +
-              " ms</p>" +
-              "<p><strong>Top 10 Pesquisas:</strong> " +
-              stats.top10Searches.join(", ") +
-              "</p>" +
-              "<p><strong>Tamanho dos índices:</strong> " +
-              JSON.stringify(stats.barrelIndexSizes) +
-              "</p>";
-            document.getElementById("stats").innerHTML = statsHtml;
-          });
-        console.log("Solicitando estatísticas iniciais...");
-        stompClient.send("/app/requestStats", {}, {});
-        },
-        function (error) {
-          console.error("Erro na conexão com WebSocket: " + error);
-        }
-      );
+    stompClient.connect({}, function (frame) {
+      console.log("Conectado: " + frame);
+      stompClient.subscribe("/topic/stats", function (message) {
+        var stats = JSON.parse(message.body);
+        var statsHtml =
+          "<p><strong>Número total de pesquisas:</strong> " + stats.numSearches + "</p>" +
+          "<p><strong>Barrels ativos:</strong> " + stats.activeBarrels + "</p>" +
+          "<p><strong>Tempo médio de resposta:</strong> " + stats.averageResponseTime + " ms</p>" +
+          "<p><strong>Top 10 Pesquisas:</strong> " + stats.top10Searches.join(", ") + "</p>" +
+          "<p><strong>Tamanho dos índices:</strong> " + JSON.stringify(stats.barrelIndexSizes) + "</p>";
+        document.getElementById("stats").innerHTML = statsHtml;
+      });
 
-      function toggleStats() {
-        var statsContent = document.getElementById("statsContent");
-        var toggleBtn = document.querySelector(".toggle-btn");
-        if (statsContent.style.display === "none") {
-          statsContent.style.display = "block";
-          toggleBtn.textContent = "Ocultar Estatísticas";
-        } else {
-          statsContent.style.display = "none";
-          toggleBtn.textContent = "Mostrar Estatísticas";
-        }
+      console.log("Solicitando estatísticas iniciais...");
+      stompClient.send("/app/requestStats", {}, {});
+    }, function (error) {
+      console.error("Erro na conexão com WebSocket: " + error);
+    });
+
+    function toggleStats() {
+      var statsContent = document.getElementById("statsContent");
+      var toggleBtn = document.querySelector(".toggle-btn");
+      if (statsContent.style.display === "none") {
+        statsContent.style.display = "block";
+        toggleBtn.textContent = "Ocultar Estatísticas";
+      } else {
+        statsContent.style.display = "none";
+        toggleBtn.textContent = "Mostrar Estatísticas";
       }
-    </script>
+    }
+  </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
