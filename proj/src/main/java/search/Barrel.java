@@ -26,6 +26,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
         System.out.println(barrelName + " carregou " + index.size() + " palavras do arquivo");
         registerWithGateway();
         registerWithReliableMulticastService();
+        notifyStatisticsService();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -41,19 +42,21 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
     }
 
     private void notifyStatisticsService() {
-        try {
-            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1100);
-            StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
-            statsService.notifyIndexUpdate(this.barrelName, index.size());
-        } catch (Exception e) {
-            System.out.println("Error notifying statistics service: " + e.getMessage());
+        while (true) {
+            try {
+                Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1100);
+                StatisticsService statsService = (StatisticsService) registry.lookup("StatisticsService");
+                statsService.notifyIndexUpdate(this.barrelName, index.size());
+                break;
+            } catch (Exception e) {
+                // System.out.println("Error notifying statistics service: " + e.getMessage());
+            }
         }
     }
-    
-    
+
     private void registerWithGateway() {
         try {
-            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1099);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1099);
             IClientGateway gateway = (IClientGateway) registry.lookup("GatewayService");
             gateway.registerBarrel(this.barrelName, this);
             System.out.println("Barrel registrado via Gateway.");
@@ -74,7 +77,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
 
     private void registerWithReliableMulticastService() {
         try {
-            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(),1097);
+            Registry registry = LocateRegistry.getRegistry(StorageUtil.getIP(), 1097);
             multicastService = (ReliableMulticastService) registry.lookup("ReliableMulticast");
             multicastService.registerClient(this, this.barrelName);
             System.out.println(barrelName + " registrado para receber mensagens confiáveis.");
@@ -91,7 +94,6 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             processReceivedData(message);
         }
     }
-
 
     private void processReceivedData(String mensagem) {
         String[] partes = mensagem.split(";", 2);
@@ -122,7 +124,7 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
                     resultsSet.retainAll(index.get(w));
                 }
             } else {
-                return new ArrayList<>(); 
+                return new ArrayList<>();
             }
         }
 
@@ -131,9 +133,8 @@ public class Barrel extends UnicastRemoteObject implements IBarrelGateway, Relia
             String urlA = a.split("URL: ")[1].split(" ")[0];
             String urlB = b.split("URL: ")[1].split(" ")[0];
             return Integer.compare(
-                linksCorr.getOrDefault(urlB, new HashSet<>()).size(), 
-                linksCorr.getOrDefault(urlA, new HashSet<>()).size()
-            );
+                    linksCorr.getOrDefault(urlB, new HashSet<>()).size(),
+                    linksCorr.getOrDefault(urlA, new HashSet<>()).size());
         });
 
         int totalPages = (int) Math.ceil(results.size() / 10.0);
