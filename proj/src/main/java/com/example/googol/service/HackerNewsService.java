@@ -22,6 +22,7 @@ public class HackerNewsService {
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String BASE_URL = "https://hacker-news.firebaseio.com/v0/";
 
+    @SuppressWarnings("unchecked")
     @Async
     public CompletableFuture<Integer>    fetchTopStoriesMatching(String query) {
         String[] terms = query.toLowerCase().split("\\s+");
