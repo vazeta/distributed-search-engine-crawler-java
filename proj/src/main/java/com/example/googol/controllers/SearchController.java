@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+
 import com.example.googol.service.HackerNewsService;
 import com.example.googol.service.OpenAIAnalysisService;
 
@@ -13,6 +15,8 @@ import org.springframework.ui.Model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import search.*;
 
 @Controller
@@ -46,8 +50,6 @@ public class SearchController {
 
     @Autowired
     private OpenAIAnalysisService analysisService;
-
-    
 
     @GetMapping("/search")
     public String search(@RequestParam("query") String query,
@@ -88,7 +90,7 @@ public class SearchController {
         }
 
         // Configuramos o usuário inicialmente sem análise
-        model.addAttribute("analise", ""); 
+        model.addAttribute("analise", "");
         model.addAttribute("queryId", query.hashCode() + "-" + System.currentTimeMillis());
         model.addAttribute("currentPage", page);
         model.addAttribute("query", query);
@@ -97,14 +99,14 @@ public class SearchController {
 
         // Processamento assíncrono da análise Ollama - usando streaming
         List<String> snippets = parsedResults.stream()
-            .map(SearchResult::getCitacao)
-            .filter(c -> c != null && !c.isBlank())
-            .limit(15)
-            .toList();
-            
+                .map(SearchResult::getCitacao)
+                .filter(c -> c != null && !c.isBlank())
+                .limit(15)
+                .toList();
+
         // Iniciar análise streaming de forma assíncrona
-        analysisService.generateAnalysisStreaming(query, snippets, 
-            query.hashCode() + "-" + System.currentTimeMillis());
+        analysisService.generateAnalysisStreaming(query, snippets,
+                query.hashCode() + "-" + System.currentTimeMillis());
 
         return "search_results";
     }
@@ -114,7 +116,10 @@ public class SearchController {
 
     @PostMapping("/hn-index")
     public String indexHackerNews(@RequestParam("query") String query, Model model) {
-        hackerNewsService.fetchTopStoriesMatching(query);
-        return "redirect:/";
+        CompletableFuture<Integer> future = hackerNewsService.fetchTopStoriesMatching(query);
+        int i = future.join(); // espera terminar
+        model.addAttribute("message", "Foram encontrados " + i + " links.");
+        return "greeting";
     }
+
 }

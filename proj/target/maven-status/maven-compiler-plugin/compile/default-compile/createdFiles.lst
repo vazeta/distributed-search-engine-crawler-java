@@ -7,13 +7,13 @@ search/Statistics.class
 search/Downloader$DownloaderTask.class
 com/example/googol/controllers/IndexController.class
 com/example/googol/controllers/StatisticsWebSocketController.class
-com/example/googol/Example.class
 com/example/googol/service/HackerNewsService.class
+com/example/googol/Example.class
 search/URLQueueImpl.class
 com/example/googol/config/WebSocketConfig.class
 search/ReliableMulticastClient.class
-com/example/googol/controllers/SearchController$SearchResult.class
 com/example/googol/controllers/HomeController.class
+com/example/googol/controllers/SearchController$SearchResult.class
 com/example/googol/config/StatisticsServiceConfigurator.class
 search/StatisticsClient.class
 search/StatisticsClientImpl.class

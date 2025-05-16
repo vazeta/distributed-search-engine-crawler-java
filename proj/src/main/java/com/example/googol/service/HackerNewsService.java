@@ -23,13 +23,13 @@ public class HackerNewsService {
     private static final String BASE_URL = "https://hacker-news.firebaseio.com/v0/";
 
     @Async
-    public void fetchTopStoriesMatching(String query) {
+    public CompletableFuture<Integer>    fetchTopStoriesMatching(String query) {
         String[] terms = query.toLowerCase().split("\\s+");
         List<String> matchedUrls = new ArrayList<>();
 
         String[] storyIds = restTemplate.getForObject(BASE_URL + "topstories.json", String[].class);
         if (storyIds == null)
-            return;
+            return CompletableFuture.completedFuture(0);
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -66,6 +66,7 @@ public class HackerNewsService {
                 System.out.println("Erro no hacker news a adicionar à queue");
             }
         }
+        return CompletableFuture.completedFuture(matchedUrls.size());
     }
 
 }
