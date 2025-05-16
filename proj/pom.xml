@@ -70,6 +70,19 @@
 
 	<build>
   <plugins>
+
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.example.googol.ServingWebContentApplication</mainClass>
+                    <!-- JVM argument to force RMI hostname on network interface -->
+                    <jvmArguments>-Djava.rmi.server.hostname=127.0.0.1</jvmArguments>
+                    <!-- External config location for config.properties -->
+                    <arguments>--spring.config.location=file:./data/config.properties</arguments>
+                </configuration>
+            </plugin>
     <plugin>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-maven-plugin</artifactId>
