@@ -28,7 +28,6 @@ public class OpenAIAnalysisService {
             String query, List<String> snippets, String queryId) {
         return CompletableFuture.runAsync(() -> {
             try {
-                // Monta mensagens no formato Chat
                 List<Map<String,String>> messages = new ArrayList<>();
                 messages.add(Map.of(
                     "role", "system",
@@ -57,7 +56,7 @@ public class OpenAIAnalysisService {
                     .build();
 
                 StringBuilder acumulador = new StringBuilder();
-                // Processa linha a linha (Server-Sent Events)
+                
                 client.send(request, HttpResponse.BodyHandlers.ofLines())
                       .body()
                       .forEach(line -> {
@@ -76,11 +75,11 @@ public class OpenAIAnalysisService {
                                                       acumulador.toString());
                               }
                           } catch (Exception e) {
-                              // ignora pedaços mal-formados
+                              
                           }
                       });
 
-                // Envia texto final (caso não tenha sido enviado no loop)
+                
                 messagingTemplate
                     .convertAndSend("/topic/analysis/" + queryId,
                                     acumulador.toString());

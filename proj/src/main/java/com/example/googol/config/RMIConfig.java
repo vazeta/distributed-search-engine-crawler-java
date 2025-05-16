@@ -23,10 +23,9 @@ public class RMIConfig {
 
     @Bean
     public StatisticsServiceImpl statisticsServiceImpl() throws RemoteException {
-        return new StatisticsServiceImpl(); // Spring vai controlar essa instância
+        return new StatisticsServiceImpl();
     }
 
-    // Bean separado para configurar o controlador no serviço
     @Bean
     public StatisticsServiceConfigurator statisticsServiceConfigurator(
             StatisticsServiceImpl service,

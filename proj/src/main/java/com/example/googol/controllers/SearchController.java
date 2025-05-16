@@ -89,7 +89,6 @@ public class SearchController {
             }
         }
 
-        // Configuramos o usuário inicialmente sem análise
         model.addAttribute("analise", "");
         model.addAttribute("queryId", query.hashCode() + "-" + System.currentTimeMillis());
         model.addAttribute("currentPage", page);
@@ -97,14 +96,12 @@ public class SearchController {
         model.addAttribute("results", parsedResults);
         model.addAttribute("pages", pages);
 
-        // Processamento assíncrono da análise Ollama - usando streaming
         List<String> snippets = parsedResults.stream()
                 .map(SearchResult::getCitacao)
                 .filter(c -> c != null && !c.isBlank())
                 .limit(15)
                 .toList();
 
-        // Iniciar análise streaming de forma assíncrona
         analysisService.generateAnalysisStreaming(query, snippets,
                 query.hashCode() + "-" + System.currentTimeMillis());
 
@@ -117,7 +114,7 @@ public class SearchController {
     @PostMapping("/hn-index")
     public String indexHackerNews(@RequestParam("query") String query, Model model) {
         CompletableFuture<Integer> future = hackerNewsService.fetchTopStoriesMatching(query);
-        int i = future.join(); // espera terminar
+        int i = future.join();
         model.addAttribute("message", "Foram encontrados " + i + " links.");
         return "greeting";
     }

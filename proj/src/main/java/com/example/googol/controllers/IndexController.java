@@ -23,7 +23,7 @@ public class IndexController {
         } catch (Exception e) {
             model.addAttribute("error", "O indexamento do link falhou.");
         }
-        return "greeting";  // retorna para a mesma página de index
+        return "greeting";
     }
 }
 
