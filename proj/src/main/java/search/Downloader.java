@@ -98,7 +98,7 @@ public class Downloader {
                         continue;
                     }
                 } catch (Exception e) {
-                    System.out.println(Thread.currentThread().getName() + " erro ao buscar nova URL: " + e.getMessage());
+                    //System.out.println(Thread.currentThread().getName() + " erro ao buscar nova URL: " + e.getMessage());
                 }
             }
             System.out.println(Thread.currentThread().getName() + " encerrado.");
